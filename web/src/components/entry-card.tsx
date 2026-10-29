@@ -28,16 +28,6 @@ export function EntryCard({ entry, eager = false }: { entry: Entry; eager?: bool
       </Field>
       <Field label="Published">{entry.publishedAt}</Field>
       {entry.duration ? <Field label="Duration">{formatDuration(entry.duration)}</Field> : null}
-      <Field label="Link">
-        <a
-          href={entry.link}
-          target="_blank"
-          rel="noreferrer"
-          className="block truncate underline-offset-4 hover:underline"
-        >
-          {entry.link}
-        </a>
-      </Field>
       {entry.category.length ? (
         <Field label="Category">
           <span className="flex flex-wrap gap-1">

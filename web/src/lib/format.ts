@@ -18,7 +18,3 @@ export function formatDuration(seconds: number): string {
   const s = Math.floor(seconds % 60);
   return h ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
 }
-
-export function formatCoverage(hours: number | null | undefined): string {
-  return typeof hours === "number" ? `${hours} hours` : "unknown";
-}
