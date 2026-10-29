@@ -1,0 +1,18 @@
+# Netlify builds the static site in web/ from the digests committed under output/data/.
+# The skill itself runs locally (it needs Claude to write the summaries); pushing its
+# output is what triggers a new deploy.
+
+[build]
+  base = "web"
+  command = "npm run build"
+  # Relative to base: web/out.
+  publish = "out"
+
+[build.environment]
+  # Next.js 16 needs Node 20.9 or later.
+  NODE_VERSION = "22"
+  # The site is a static export, so the Next.js runtime plugin (for server rendering) is not needed.
+  NETLIFY_NEXT_PLUGIN_SKIP = "true"
+  # Build servers run on UTC. The home page decides "today" at build time, and the skill
+  # names day files by local date, so build in the same timezone the skill runs in.
+  TZ = "Australia/Sydney"

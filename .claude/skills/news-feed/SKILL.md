@@ -1,13 +1,13 @@
 ---
 name: news-feed
-description: Build today's news digest from the sources listed in source.json (podcasts, YouTube channels and blogs). Collects everything published in the last 24 hours, writes a Chinese summary and tags for each item, and outputs a daily JSON file, a Markdown note and a daily index under output/data/<Year>/<Month>/, plus a global searchable index.
+description: Build today's news digest from the sources listed in input/source.json (podcasts, YouTube channels and blogs). Collects everything published in the last 24 hours, writes a Chinese summary and tags for each item, and outputs a daily JSON file, a Markdown note and a daily index under output/data/<Year>/<Month>/, plus a global searchable index.
 user-invocable: true
 argument-hint: "[hours, default 24]"
 ---
 
 # News Feed
 
-Collect everything the sources in `source.json` published in the last 24 hours (or the number of hours given as the argument), summarise each item in Chinese, and write today's digest.
+Collect everything the sources in `input/source.json` published in the last 24 hours (or the number of hours given as the argument), summarise each item in Chinese, and write today's digest.
 
 Run everything from the project root.
 
@@ -15,7 +15,7 @@ The work splits in two: the scripts do all fetching, merging and rendering; you 
 
 ## source.json changes between runs
 
-`source.json` is hand-edited at any time: items are added and removed, and so are types, categories and publishers. On every run, treat the file as it is now.
+`input/source.json` is hand-edited at any time: items are added and removed, and so are types, categories and publishers. On every run, treat the file as it is now.
 
 - Never reuse a source list from memory or from an earlier digest. Step 1 re-reads the file in full.
 - `type` is currently `Podcast`, `YouTube` or `Blog`, but a new value may appear at any time. The script reads an unknown type's `link` as an RSS/Atom feed and warns on stderr. Pass that warning on in your report so the user knows the type was not specially handled.
@@ -28,7 +28,7 @@ Install the dependency once, then fetch:
 
 ```bash
 [ -d .claude/skills/news-feed/scripts/node_modules ] || npm install --prefix .claude/skills/news-feed/scripts
-node .claude/skills/news-feed/scripts/fetch.mjs source.json --hours 24 > <scratchpad>/raw.json
+node .claude/skills/news-feed/scripts/fetch.mjs input/source.json --hours 24 > <scratchpad>/raw.json
 ```
 
 `--hours` accepts a number from 1 to 48. Anything else — out of range, not a number, missing — falls back to 24 and the script says so on stderr.
@@ -50,6 +50,8 @@ For each source in `errors`, try once by hand with WebFetch — find its RSS fee
 
 ## Step 2: Write a summary and tags for each entry
 
+First, if today's day file already exists (`output/data/<Year>/<Month>/<YYYY-MM-DD>.json`), read it. An entry in `raw.json` whose `link` — or `videoId`, for YouTube — matches one there that already has a summary does not need a new one: leave its `summary` and `tags` empty, and Step 3 keeps the earlier ones. Write summaries and tags only for the rest.
+
 All summaries are in **Simplified Chinese**. Choose the method by what the entry is (`type`, or for an entry fetched by hand, what the content actually is).
 
 - **Podcast** — `description` is the episode's show notes.
@@ -69,7 +71,7 @@ For every entry:
 - The summary states the content and nothing else. Leave out any note on where the information came from, how complete the description was, or how you worked it out.
 - `tags`: 1 to 6 tags, **English, lower case, hyphenated between words** (`machine-learning`, `us-politics`, `premier-league`), with no `#` prefix. Write them from what the entry is actually about — its title and your summary — not from the source's `category`. Prefer a few specific tags over many vague ones; a single-topic entry may well have only two.
 
-Write the result to `<scratchpad>/enriched.json`: the same structure as `raw.json`, with `summary` and `tags` filled in on every entry. Change nothing else.
+Write the result to `<scratchpad>/enriched.json`: the same structure as `raw.json`, with `summary` and `tags` filled in on every entry that needs them (all of them, unless some were already summarised earlier today). Change nothing else.
 
 ## Step 3: Write the output files
 
@@ -110,7 +112,7 @@ This writes four files under `output/data/`, using today's local date:
 
 `coverage` is the `--hours` window the run used, as a number of hours (`24` means the last 24 hours). `duration` is **whole seconds** (`null` when unknown). `audioLink` and `videoId` are `null` when they do not apply.
 
-**`<Year>/<Month>/<YYYY-MM-DD>.md`** — the same entries as a note: frontmatter (`Date`, `Updated At`, `Coverage`, `Entries` — `Coverage` reads like `24 hours`), an H1 of the date, one `##` section per entry with its thumbnail, the `Source` / `Published` / `Link` / `Category` / `Tags` fields and the summary, and a bold `⚠️ **Fetch issues**` block last.
+**`<Year>/<Month>/<YYYY-MM-DD>.md`** — the same entries as a note: frontmatter (`Date`, `Updated At`, `Coverage`, `Entries` — `Coverage` reads like `24 hours`), an H1 of the date, one `##` section per entry with its thumbnail, the `Source` / `Published` / `Link` / `Category` / `Tags` / `Summary` fields, and a bold `⚠️ **Fetch issues**` block last. `Tags` and `Summary` are left out of an entry that has none, which happens when the digest is made without Claude (`npm run digest`); the website hides them the same way.
 
 **`<Year>/<Month>/<YYYY-MM-DD>-index.json`** — the day's own index, e.g. `2026/10/2026-10-29-index.json`:
 
@@ -160,14 +162,17 @@ Both kinds of index are rebuilt from the day files on every run, so every past d
 
 ### Running more than once a day
 
-The skill is meant to run once a day, but running it again is safe and is the normal way to pick up what was published since. Fetch exactly as you would on a first run — the merge happens on write:
+The skill is meant to run once a day, but running it again is safe and is the normal way to pick up what was published since. Fetch exactly as you would on a first run — the merge happens on write, as an upsert:
 
-- Entries already in the day's file are left untouched, so **a summary you wrote earlier is never overwritten**. Only unseen entries are appended.
 - An entry counts as already present when its `link` matches, or its `videoId` for YouTube.
+- **An entry already in the day's file is updated** from this fetch: title, thumbnail, duration, publish time and every other fetched field take the new values.
+- **`summary` and `tags` are only replaced by non-empty values.** Left empty, the earlier ones are kept, so a summary written earlier is never lost — not even to a run without Claude (`npm run digest`). Conversely, a later skill run fills in the summaries such a run left empty.
+- **A new entry is appended.**
+- **An entry this fetch did not return is kept as it is** — whether it fell outside a shorter `--hours` window, its source failed this time, or it was filtered out. Nothing is ever removed from a day file by a re-run.
 - `updatedAt`, `entryCount`, the Markdown note and both indexes are all refreshed.
 - `coverage` is set to this run's `--hours`, replacing the earlier value. It records the window of the latest run, not the union of all runs.
 
-The script prints how many entries it added, how many it skipped as duplicates, and the four file paths.
+The script prints how many entries it added, how many it updated, how many it skipped as duplicates within this run, and the four file paths.
 
 ## Step 4: Build the site
 
@@ -185,7 +190,7 @@ Tell the user:
 
 - the paths of the JSON, Markdown and day index files
 - whether the site build succeeded (`web/out/`), or the error it failed with
-- how many entries were added this run, and the day's total
+- how many entries were added and how many updated this run, and the day's total
 - the entry count per source, grouped by type
 - how many Shorts were filtered out, and how many region-restricted videos (with the `country` used, or the warning that it was not set)
 - every source in `errors`, with its reason, and every `source.json` warning

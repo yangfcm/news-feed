@@ -91,7 +91,8 @@ export function EntryCard({ entry, eager = false }: { entry: Entry; eager?: bool
           </div>
         )}
         {entry.audioLink ? <AudioPlayer src={entry.audioLink} title={entry.title} /> : null}
-        {entry.summary ? <p className="leading-relaxed">{entry.summary}</p> : null}
+        {/* Digests made without Claude have no summary (or tags), so neither is shown. */}
+        {entry.summary?.trim() ? <p className="leading-relaxed">{entry.summary}</p> : null}
       </CardContent>
     </Card>
   );

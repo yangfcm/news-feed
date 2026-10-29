@@ -1,0 +1,13 @@
+{
+  "name": "news-feed",
+  "private": true,
+  "description": "Daily news digest: the news-feed skill writes output/data/, web/ renders it.",
+  "scripts": {
+    "setup": "npm install --prefix .claude/skills/news-feed/scripts && npm ci --prefix web",
+    "digest": "node .claude/skills/news-feed/scripts/digest.mjs input/source.json",
+    "dev": "npm run dev --prefix web",
+    "build": "npm run build --prefix web",
+    "preview": "npx serve web/out",
+    "lint": "npm run lint --prefix web"
+  }
+}

@@ -5,6 +5,10 @@
 # Installed by the news-feed skill on first run (package-lock.json is committed).
 node_modules/
 
+# The root package.json only holds shortcut scripts and has no dependencies; a stray
+# `npm install` here would write a lockfile that makes Next.js warn about multiple lockfiles.
+/package-lock.json
+
 # macOS
 .DS_Store
 ._*

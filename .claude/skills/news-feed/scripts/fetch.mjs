@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Collect everything the sources in source.json published in the last N hours.
 //
-//   node fetch.mjs <source.json> [--hours 24]
+//   node fetch.mjs <source.json> [--hours 24]      (the project keeps it at input/source.json)
 //
 // Prints JSON to stdout. `summary` and `tags` are left empty for Claude to fill in.
 // source.json is re-read in full on every run: it is hand-edited between runs, so no

@@ -4,8 +4,10 @@
 //
 //   node write.mjs <enriched.json> [--out output/data]
 //
-// Re-running on the same day merges: existing entries are kept as they are (summaries
-// written earlier are never overwritten) and only unseen entries are appended.
+// Re-running on the same day upserts: an entry already in the day file is refreshed from
+// the new fetch, a new one is appended, and one the new fetch did not return is kept.
+// summary and tags are only replaced by non-empty values, so a run without them (no
+// Claude) never wipes out ones written earlier.
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -60,6 +62,18 @@ function shape(entry) {
   return out;
 }
 
+/**
+ * Refresh an entry already in the day file. Every field comes from the new fetch except
+ * summary and tags, which keep their earlier value unless the new one is non-empty.
+ */
+function merge(previous, next) {
+  return {
+    ...next,
+    summary: String(next.summary).trim() ? next.summary : previous.summary,
+    tags: next.tags.length ? next.tags : previous.tags,
+  };
+}
+
 const byPublishedDesc = (a, b) =>
   a.publishedAt < b.publishedAt ? 1 : a.publishedAt > b.publishedAt ? -1 : a.title < b.title ? -1 : 1;
 
@@ -87,8 +101,9 @@ function renderMarkdown(day) {
     lines.push(`- **Published:** ${entry.publishedAt}`);
     lines.push(`- **Link:** ${entry.link}`);
     lines.push(`- **Category:** ${entry.category.join(", ")}`);
-    lines.push(`- **Tags:** ${entry.tags.map((t) => `#${t}`).join(" ")}`);
-    lines.push(`- **Summary:** ${entry.summary || ''}`);
+    // Without Claude there are no tags or summary; leave the lines out rather than empty.
+    if (entry.tags.length) lines.push(`- **Tags:** ${entry.tags.map((t) => `#${t}`).join(" ")}`);
+    if (String(entry.summary).trim()) lines.push(`- **Summary:** ${entry.summary}`);
     lines.push("");
   }
 
@@ -231,22 +246,33 @@ function main() {
     }
   }
 
-  const seen = new Set(existing.map(entryKey));
-  const added = [];
+  const byKey = new Map(existing.map((entry) => [entryKey(entry), shape(entry)]));
+  const seenThisRun = new Set();
+  let added = 0;
+  let updated = 0;
   for (const entry of incoming) {
     const key = entryKey(entry);
-    if (seen.has(key)) continue;
-    seen.add(key);
-    added.push(shape(entry));
+    // The same item from two sources counts once; the first one wins.
+    if (seenThisRun.has(key)) continue;
+    seenThisRun.add(key);
+    const previous = byKey.get(key);
+    if (previous) {
+      byKey.set(key, merge(previous, shape(entry)));
+      updated += 1;
+    } else {
+      byKey.set(key, shape(entry));
+      added += 1;
+    }
   }
+  const entries = [...byKey.values()].sort(byPublishedDesc);
 
   const day = {
     date,
     updatedAt: localDateTime(now),
     // The hours window of the latest run that wrote this day.
     coverage: typeof input.windowHours === "number" ? input.windowHours : previousCoverage,
-    entryCount: existing.length + added.length,
-    entries: [...existing.map(shape), ...added].sort(byPublishedDesc),
+    entryCount: entries.length,
+    entries,
     errors: input.errors || [],
   };
 
@@ -262,8 +288,9 @@ function main() {
     markdown: mdPath,
     dayIndex: dayIndexPath,
     index: indexPath,
-    added: added.length,
-    skippedAsDuplicate: incoming.length - added.length,
+    added,
+    updated,
+    skippedAsDuplicate: incoming.length - seenThisRun.size,
     entryCount: day.entryCount,
     indexedDays: index.dateCount,
     indexedEntries: index.entryCount,
