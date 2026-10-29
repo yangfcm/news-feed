@@ -1,0 +1,264 @@
+{
+  "updatedAt": "2026-10-29 17:29",
+  "dateCount": 1,
+  "entryCount": 11,
+  "dates": [
+    {
+      "date": "2026-10-29",
+      "entryCount": 11,
+      "path": "2026/10/2026-10-29.json"
+    }
+  ],
+  "facets": {
+    "types": [
+      "YouTube"
+    ],
+    "categories": [
+      "Football",
+      "News",
+      "Tech"
+    ],
+    "sources": [
+      "BBC World Service",
+      "ESPN FC",
+      "Maximilian Schwarzmueller"
+    ],
+    "tags": [
+      "ai",
+      "arsenal",
+      "ballon-dor",
+      "carabao-cup",
+      "career",
+      "censorship",
+      "chelsea",
+      "chicago-fire",
+      "china",
+      "developer-skills",
+      "england",
+      "fc-cincinnati",
+      "harry-kane",
+      "inter-miami",
+      "kylian-mbappe",
+      "la-liga",
+      "liverpool",
+      "manager",
+      "manchester-city",
+      "manchester-united",
+      "match-highlights",
+      "max-dowman",
+      "messi-cup",
+      "michael-carrick",
+      "mikel-arteta",
+      "mls",
+      "orlando-city",
+      "playoff-race",
+      "red-card",
+      "software-development",
+      "sponsorship",
+      "steve-nicol",
+      "tottenham",
+      "youth-football"
+    ]
+  },
+  "entries": [
+    {
+      "date": "2026-10-29",
+      "title": "Chicago Fire FC vs. Orlando City SC | MLS Highlights | ESPN FC",
+      "link": "https://www.youtube.com/watch?v=Ka5pwL8_Clg",
+      "type": "YouTube",
+      "source": "ESPN FC",
+      "publisher": "ESPN",
+      "category": [
+        "Football"
+      ],
+      "tags": [
+        "mls",
+        "chicago-fire",
+        "orlando-city",
+        "match-highlights"
+      ],
+      "publishedAt": "2026-10-29 13:12"
+    },
+    {
+      "date": "2026-10-29",
+      "title": "THRILLING FINISH 😱 Inter Miami vs. FC Cincinnati | MLS Highlights | ESPN FC",
+      "link": "https://www.youtube.com/watch?v=p7nS8EqOsxg",
+      "type": "YouTube",
+      "source": "ESPN FC",
+      "publisher": "ESPN",
+      "category": [
+        "Football"
+      ],
+      "tags": [
+        "mls",
+        "inter-miami",
+        "fc-cincinnati",
+        "playoff-race"
+      ],
+      "publishedAt": "2026-10-29 12:28"
+    },
+    {
+      "date": "2026-10-29",
+      "title": "Carabao Cup Reaction 🍿 Liverpool & Man City advance on penalties | ESPN FC",
+      "link": "https://www.youtube.com/watch?v=ygbfafSjsDM",
+      "type": "YouTube",
+      "source": "ESPN FC",
+      "publisher": "ESPN",
+      "category": [
+        "Football"
+      ],
+      "tags": [
+        "carabao-cup",
+        "liverpool",
+        "manchester-city",
+        "arsenal",
+        "manchester-united"
+      ],
+      "publishedAt": "2026-10-29 10:23"
+    },
+    {
+      "date": "2026-10-29",
+      "title": "Has Harry Kane become England’s greatest forward after winning the Ballon d’Or? | ESPN FC Extra Time",
+      "link": "https://www.youtube.com/watch?v=SW7jBkD-BhU",
+      "type": "YouTube",
+      "source": "ESPN FC",
+      "publisher": "ESPN",
+      "category": [
+        "Football"
+      ],
+      "tags": [
+        "harry-kane",
+        "ballon-dor",
+        "england",
+        "chelsea",
+        "tottenham"
+      ],
+      "publishedAt": "2026-10-29 09:54"
+    },
+    {
+      "date": "2026-10-29",
+      "title": "Michael Carrick to continue at Man United 👀 Craig Burley calls them CLUELESS | ESPN FC",
+      "link": "https://www.youtube.com/watch?v=JAvSm_00GOs",
+      "type": "YouTube",
+      "source": "ESPN FC",
+      "publisher": "ESPN",
+      "category": [
+        "Football"
+      ],
+      "tags": [
+        "manchester-united",
+        "michael-carrick",
+        "manager"
+      ],
+      "publishedAt": "2026-10-29 09:42"
+    },
+    {
+      "date": "2026-10-29",
+      "title": "Was Mikel Arteta too harsh with Max Dowman? | ESPN FC",
+      "link": "https://www.youtube.com/watch?v=NjKNcYczP80",
+      "type": "YouTube",
+      "source": "ESPN FC",
+      "publisher": "ESPN",
+      "category": [
+        "Football"
+      ],
+      "tags": [
+        "arsenal",
+        "mikel-arteta",
+        "max-dowman",
+        "red-card"
+      ],
+      "publishedAt": "2026-10-29 09:32"
+    },
+    {
+      "date": "2026-10-29",
+      "title": "Liverpool’s reserves knocked out Chelsea’s top squad – Steve Nicol | ESPN FC",
+      "link": "https://www.youtube.com/watch?v=N00Bw7VAjMo",
+      "type": "YouTube",
+      "source": "ESPN FC",
+      "publisher": "ESPN",
+      "category": [
+        "Football"
+      ],
+      "tags": [
+        "carabao-cup",
+        "liverpool",
+        "chelsea",
+        "steve-nicol"
+      ],
+      "publishedAt": "2026-10-29 09:17"
+    },
+    {
+      "date": "2026-10-29",
+      "title": "Inter Miami CF vs. Arsenal FC | Messi Cup Highlights | ESPN on Disney+",
+      "link": "https://www.youtube.com/watch?v=uetyiHcE5-c",
+      "type": "YouTube",
+      "source": "ESPN FC",
+      "publisher": "ESPN",
+      "category": [
+        "Football"
+      ],
+      "tags": [
+        "messi-cup",
+        "inter-miami",
+        "arsenal",
+        "youth-football"
+      ],
+      "publishedAt": "2026-10-29 04:18"
+    },
+    {
+      "date": "2026-10-29",
+      "title": "Why Kylian Mbappe has been cancelled in China - BBC World Service",
+      "link": "https://www.youtube.com/watch?v=MzSMLPbameM",
+      "type": "YouTube",
+      "source": "BBC World Service",
+      "publisher": "BBC",
+      "category": [
+        "News"
+      ],
+      "tags": [
+        "kylian-mbappe",
+        "china",
+        "censorship",
+        "la-liga",
+        "sponsorship"
+      ],
+      "publishedAt": "2026-10-29 02:30"
+    },
+    {
+      "date": "2026-10-29",
+      "title": "What I would focus on",
+      "link": "https://www.youtube.com/watch?v=I6V5dmoZplU",
+      "type": "YouTube",
+      "source": "Maximilian Schwarzmueller",
+      "publisher": "Maximilian Schwarzmueller",
+      "category": [
+        "Tech"
+      ],
+      "tags": [
+        "ai",
+        "software-development",
+        "career",
+        "developer-skills"
+      ],
+      "publishedAt": "2026-10-29 00:30"
+    },
+    {
+      "date": "2026-10-29",
+      "title": "Manchester City vs. UE Cornellà | Messi Cup Highlights | ESPN on Disney+",
+      "link": "https://www.youtube.com/watch?v=Higx-9sfh2w",
+      "type": "YouTube",
+      "source": "ESPN FC",
+      "publisher": "ESPN",
+      "category": [
+        "Football"
+      ],
+      "tags": [
+        "messi-cup",
+        "manchester-city",
+        "youth-football"
+      ],
+      "publishedAt": "2026-10-28 21:36"
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "title": "ABC News Daily",
+      "link": "https://www.abc.net.au/feeds/9443166/podcast.xml",
+      "type": "Podcast",
+      "category": ["News"],
+      "publisher": {
+        "name": "ABC",
+        "link": "https://www.abc.net.au/"
+      }
+    },
+    {
+      "title": "ABC Rear Vision",
+      "link": "https://www.abc.net.au/feeds/2890034/podcast.xml",
+      "type": "Podcast",
+      "category": ["History"],
+      "publisher": {
+        "name": "ABC",
+        "link": "https://www.abc.net.au/"
+      }
+    },
+    {
+      "title": "BBC Discovery",
+      "link": "https://podcasts.files.bbci.co.uk/p002w557.rss",
+      "type": "Podcast",
+      "category": ["Science"],
+      "publisher": {
+        "name": "BBC",
+        "link": "https://www.bbc.co.uk/"
+      }
+    },
+    {
+      "title": "Software Engineering Daily",
+      "link": "https://softwareengineeringdaily.com/feed/podcast/",
+      "type": "Podcast",
+      "category": ["Tech"],
+      "publisher": {
+        "name": "Software Engineering Daily",
+        "link": "https://softwareengineeringdaily.com/"
+      }
+    },
+    {
+      "title": "The Stack Overflow",
+      "link": "https://stackoverflow.blog/podcast/feed/",
+      "type": "Podcast",
+      "category": ["Tech"],
+      "publisher": {
+        "name": "The Stack Overflow",
+        "link": "https://stackoverflow.blog/podcast/"
+      }
+    },
+    {
+      "title": "Maximilian Schwarzmueller",
+      "link": "https://www.youtube.com/@maximilian-schwarzmueller",
+      "type": "YouTube",
+      "category": ["Tech"],
+      "publisher": {
+        "name": "Maximilian Schwarzmueller",
+        "link": "https://www.youtube.com/@maximilian-schwarzmueller"
+      }
+    },
+    {
+      "title": "BBC World Service",
+      "link": "https://www.youtube.com/@BBCWorldService",
+      "type": "YouTube",
+      "category": ["News"],
+      "publisher": {
+        "name": "BBC",
+        "link": "https://www.bbc.co.uk/"
+      }
+    },
+    {
+      "title": "ESPN FC",
+      "link": "https://www.youtube.com/@ESPNFC",
+      "type": "YouTube",
+      "category": ["Football"],
+      "publisher": {
+        "name": "ESPN",
+        "link": "https://www.youtube.com/@ESPNFC"
+      }
+    },
+    {
+      "title": "阮一峰的网络日志",
+      "link": "https://www.ruanyifeng.com/blog/atom.xml",
+      "type": "Blog",
+      "category": ["Tech", "Knowledge"],
+      "publisher": {
+        "name": "阮一峰",
+        "link": "https://www.ruanyifeng.com/blog/index.html"
+      }
+    },
+    {
+      "title": "Hello Github",
+      "link": "https://hellogithub.com/rss",
+      "type": "Blog",
+      "category": ["Tech"],
+      "publisher": {
+        "name": "Hello Github",
+        "link": "https://hellogithub.com/en"
+      }
+    }
+  ]
+}

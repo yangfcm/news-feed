@@ -1,0 +1,10 @@
+{
+  "name": "news-feed-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Fetch and render the daily news digest for the news-feed skill.",
+  "dependencies": {
+    "fast-xml-parser": "^5.11.2"
+  }
+}

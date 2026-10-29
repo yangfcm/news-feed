@@ -1,0 +1,17 @@
+# Secrets. YT_API_KEY lives here; never commit it. See .env.example.
+.env
+.env.local
+
+# Installed by the news-feed skill on first run (package-lock.json is committed).
+node_modules/
+
+# macOS
+.DS_Store
+._*
+
+# Claude Code local overrides
+.claude/settings.local.json
+
+# The generated digests ARE committed, so a frontend can read them straight from
+# the repo. Uncomment the next line instead if you would rather keep data out of git.
+# output/
