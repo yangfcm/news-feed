@@ -25,7 +25,7 @@ export function PageShell({
   );
 
   return (
-    <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+    <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-8 lg:grid-cols-[minmax(0,1fr)_320px]">
       <main className="min-w-0">{children}</main>
       {/* Not sticky: the filters can be taller than the viewport and should scroll with the page. */}
       <aside className="hidden flex-col gap-6 lg:flex lg:self-start">{sidebarContent}</aside>
