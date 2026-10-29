@@ -1,30 +1,27 @@
 "use client";
 
 import { MoonIcon, SunIcon } from "lucide-react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function ModeToggle() {
-  const { setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
+  const next = theme === "dark" ? "light" : "dark";
+  const label = theme ? `Switch to ${next} mode` : "Toggle theme";
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="outline" size="icon" />}>
-        <SunIcon className="scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
-        <MoonIcon className="absolute scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
-        <span className="sr-only">Toggle theme</span>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>Light</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>Dark</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>System</DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Tooltip>
+      <TooltipTrigger
+        render={<Button variant="outline" size="icon" className="cursor-pointer" />}
+        onClick={() => setTheme(next)}
+        aria-label={label}
+      >
+        {/* Driven by the `dark` class so the right icon shows before hydration. */}
+        <SunIcon className="dark:hidden" />
+        <MoonIcon className="hidden dark:block" />
+      </TooltipTrigger>
+      <TooltipContent side="bottom">{label}</TooltipContent>
+    </Tooltip>
   );
 }
