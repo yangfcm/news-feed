@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ModeToggle } from "@/components/mode-toggle";
+import { HeaderSlot } from "@/components/sidebar-menu";
 
 export function SiteHeader() {
   return (
@@ -8,7 +9,10 @@ export function SiteHeader() {
         <Link href="/" className="text-lg font-semibold tracking-tight">
           News Feed
         </Link>
-        <ModeToggle />
+        <div className="flex items-center gap-2">
+          <HeaderSlot />
+          <ModeToggle />
+        </div>
       </div>
     </header>
   );

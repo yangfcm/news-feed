@@ -20,3 +20,10 @@ export function TodayView({
   if (browserToday && browserToday !== builtFor) return <EmptyDay date={browserToday} latest={latest} />;
   return children;
 }
+
+/** Like TodayView, but shows nothing instead of the empty state; for the build day's sidebar. */
+export function TodayOnly({ builtFor, children }: { builtFor: string; children: React.ReactNode }) {
+  const browserToday = useBrowserToday();
+  if (browserToday && browserToday !== builtFor) return null;
+  return children;
+}
