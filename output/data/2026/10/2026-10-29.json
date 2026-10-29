@@ -1,8 +1,32 @@
 {
   "date": "2026-10-29",
-  "updatedAt": "2026-10-29 17:29",
-  "entryCount": 11,
+  "updatedAt": "2026-10-29 20:19",
+  "coverage": 24,
+  "entryCount": 12,
   "entries": [
+    {
+      "title": "AI Regulation and What Every Tech Company Should Know",
+      "source": "Software Engineering Daily",
+      "type": "Podcast",
+      "publisher": "Software Engineering Daily",
+      "publishedAt": "2026-10-29 19:30",
+      "link": "https://softwareengineeringdaily.com/podcasts/ai-regulation-and-what-every-tech-company-should-know/",
+      "thumbnail": "https://softwareengineeringdaily.com/wp-content/uploads/2026/07/sed_logo_2026.png",
+      "category": [
+        "Tech"
+      ],
+      "summary": "人工智能的迅速崛起引发了大量法律与监管活动。目前并不存在单一的AI法律，而是隐私、网络安全、消费者保护、劳动和知识产权等法律与新出台的AI专项规则层层叠加；欧盟有《AI法案》，美国尚无联邦层面的对应法律，取而代之的是150多部各州AI法律拼凑而成的格局，且每隔几个月就会变化。本期嘉宾是国际律所Orrick网络、隐私与数据创新组及AI业务的联合负责人、数据律师Shannon Yavorsky，她与主持人Kevin Ball一起梳理这一监管版图。两人讨论了如何厘清真正适用于自身的多层监管、从低风险的制造工具到决定贷款或医疗的高风险系统之间的风险谱系、“影子AI”问题以及会议录音为何可能成为诉讼隐患，并探讨了如何建立AI治理体系。",
+      "tags": [
+        "ai-regulation",
+        "eu-ai-act",
+        "ai-governance",
+        "data-privacy",
+        "tech-law"
+      ],
+      "audioLink": "https://media.transistor.fm/2c187aae/31e43b05.mp3",
+      "videoId": null,
+      "duration": 3203
+    },
     {
       "title": "Chicago Fire FC vs. Orlando City SC | MLS Highlights | ESPN FC",
       "source": "ESPN FC",

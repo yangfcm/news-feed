@@ -1,16 +1,19 @@
 {
-  "updatedAt": "2026-10-29 17:29",
+  "updatedAt": "2026-10-29 20:19",
   "dateCount": 1,
-  "entryCount": 11,
+  "entryCount": 12,
   "dates": [
     {
       "date": "2026-10-29",
-      "entryCount": 11,
-      "path": "2026/10/2026-10-29.json"
+      "coverage": 24,
+      "entryCount": 12,
+      "path": "2026/10/2026-10-29.json",
+      "indexPath": "2026/10/2026-10-29-index.json"
     }
   ],
   "facets": {
     "types": [
+      "Podcast",
       "YouTube"
     ],
     "categories": [
@@ -21,10 +24,13 @@
     "sources": [
       "BBC World Service",
       "ESPN FC",
-      "Maximilian Schwarzmueller"
+      "Maximilian Schwarzmueller",
+      "Software Engineering Daily"
     ],
     "tags": [
       "ai",
+      "ai-governance",
+      "ai-regulation",
       "arsenal",
       "ballon-dor",
       "carabao-cup",
@@ -33,8 +39,10 @@
       "chelsea",
       "chicago-fire",
       "china",
+      "data-privacy",
       "developer-skills",
       "england",
+      "eu-ai-act",
       "fc-cincinnati",
       "harry-kane",
       "inter-miami",
@@ -56,11 +64,31 @@
       "software-development",
       "sponsorship",
       "steve-nicol",
+      "tech-law",
       "tottenham",
       "youth-football"
     ]
   },
   "entries": [
+    {
+      "date": "2026-10-29",
+      "title": "AI Regulation and What Every Tech Company Should Know",
+      "link": "https://softwareengineeringdaily.com/podcasts/ai-regulation-and-what-every-tech-company-should-know/",
+      "type": "Podcast",
+      "source": "Software Engineering Daily",
+      "publisher": "Software Engineering Daily",
+      "category": [
+        "Tech"
+      ],
+      "tags": [
+        "ai-regulation",
+        "eu-ai-act",
+        "ai-governance",
+        "data-privacy",
+        "tech-law"
+      ],
+      "publishedAt": "2026-10-29 19:30"
+    },
     {
       "date": "2026-10-29",
       "title": "Chicago Fire FC vs. Orlando City SC | MLS Highlights | ESPN FC",

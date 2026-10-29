@@ -12,7 +12,15 @@ import { fetchText, mapPool } from "./lib/http.mjs";
 import { normaliseFeedEntry, parseFeed } from "./lib/feeds.mjs";
 import { loadSources } from "./lib/sources.mjs";
 import { loadEnv } from "./lib/env.mjs";
-import { apiKey, bestThumbnail, fetchVideos, listUploads, resolveChannelId, uploadsPlaylistId } from "./lib/youtube.mjs";
+import {
+  apiKey,
+  bestThumbnail,
+  fetchVideos,
+  listUploads,
+  resolveChannelId,
+  uploadsPlaylistId,
+  watchableIn,
+} from "./lib/youtube.mjs";
 
 const HOURS_DEFAULT = 24;
 const HOURS_MIN = 1;
@@ -43,6 +51,14 @@ function resolveHours(raw) {
     };
   }
   return { hours: n, note: null };
+}
+
+/** COUNTRY must be an ISO 3166-1 alpha-2 code; without one, region restrictions are not checked. */
+function resolveCountry(raw) {
+  const value = String(raw ?? "").trim().toUpperCase();
+  if (/^[A-Z]{2}$/.test(value)) return { country: value, note: null };
+  const problem = value ? `COUNTRY ${JSON.stringify(String(raw))} is not a two-letter country code` : "COUNTRY is not set";
+  return { country: null, note: `${problem}; region-restricted YouTube videos are not filtered out` };
 }
 
 function makeEntry(source, fields, published) {
@@ -80,15 +96,17 @@ async function collectFeed(source, cutoff) {
       makeEntry(source, { ...fields, duration: durationToSeconds(fields.rawDuration), videoId: null }, published)
     );
   }
-  return { entries, missingFields, shorts: 0 };
+  return { entries, missingFields, shorts: 0, regionRestricted: 0 };
 }
 
 /**
  * YouTube sources together: each channel's uploads are listed separately, then every
  * video id from every channel is fetched in one batched videos.list call.
  */
-async function collectYouTube(sources, cutoff) {
-  const results = new Map(sources.map((s) => [s, { entries: [], missingFields: 0, shorts: 0, error: null }]));
+async function collectYouTube(sources, cutoff, country) {
+  const results = new Map(
+    sources.map((s) => [s, { entries: [], missingFields: 0, shorts: 0, regionRestricted: 0, error: null }])
+  );
   if (!sources.length) return results;
 
   let key;
@@ -144,6 +162,11 @@ async function collectYouTube(sources, cutoff) {
         bucket.shorts += 1;
         continue;
       }
+      // A video limited to a list of countries that leaves ours out cannot be watched here.
+      if (country && !watchableIn(video, country)) {
+        bucket.regionRestricted += 1;
+        continue;
+      }
       const title = String(snippet.title || "").trim();
       if (!title) {
         bucket.missingFields += 1;
@@ -180,6 +203,8 @@ async function main() {
   loadEnv();
   const { hours, note } = resolveHours(hoursRaw);
   if (note) console.error(`warning: ${note}`);
+  const { country, note: countryNote } = resolveCountry(process.env.COUNTRY);
+  if (countryNote) console.error(`warning: ${countryNote}`);
 
   const { sources, warnings } = loadSources(sourcePath);
   for (const w of warnings) console.error(`warning: ${w}`);
@@ -195,10 +220,10 @@ async function main() {
       try {
         return { source, ...(await collectFeed(source, cutoff)) };
       } catch (err) {
-        return { source, entries: [], missingFields: 0, shorts: 0, error: err.message };
+        return { source, entries: [], missingFields: 0, shorts: 0, regionRestricted: 0, error: err.message };
       }
     }),
-    collectYouTube(youtubeSources, cutoff),
+    collectYouTube(youtubeSources, cutoff, country),
   ]);
 
   const bySource = new Map(feedResults.map((r) => [r.source, r]));
@@ -207,16 +232,23 @@ async function main() {
   const out = {
     generatedAt: localDateTime(now),
     windowHours: hours,
+    country,
     sourceFile: sourcePath,
     sources: [],
     entries: [],
     errors: [],
     warnings,
-    filtered: { shorts: 0, missingFields: 0 },
+    filtered: { shorts: 0, regionRestricted: 0, missingFields: 0 },
   };
 
   for (const source of sources) {
-    const result = bySource.get(source) ?? { entries: [], shorts: 0, missingFields: 0, error: "not fetched" };
+    const result = bySource.get(source) ?? {
+      entries: [],
+      shorts: 0,
+      regionRestricted: 0,
+      missingFields: 0,
+      error: "not fetched",
+    };
     if (result.error) {
       out.errors.push({ source: source.title, type: source.type, link: source.link, error: result.error });
       continue;
@@ -224,6 +256,7 @@ async function main() {
     out.sources.push({ source: source.title, type: source.type, link: source.link, count: result.entries.length });
     out.entries.push(...result.entries);
     out.filtered.shorts += result.shorts;
+    out.filtered.regionRestricted += result.regionRestricted;
     out.filtered.missingFields += result.missingFields;
   }
 

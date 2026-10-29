@@ -1,6 +1,6 @@
 ---
 name: news-feed
-description: Build today's news digest from the sources listed in source.json (podcasts, YouTube channels and blogs). Collects everything published in the last 24 hours, writes a Chinese summary and tags for each item, and outputs a daily JSON file, a Markdown note and a searchable index under output/data/<Year>/<Month>/.
+description: Build today's news digest from the sources listed in source.json (podcasts, YouTube channels and blogs). Collects everything published in the last 24 hours, writes a Chinese summary and tags for each item, and outputs a daily JSON file, a Markdown note and a daily index under output/data/<Year>/<Month>/, plus a global searchable index.
 user-invocable: true
 argument-hint: "[hours, default 24]"
 ---
@@ -33,14 +33,18 @@ node .claude/skills/news-feed/scripts/fetch.mjs source.json --hours 24 > <scratc
 
 `--hours` accepts a number from 1 to 48. Anything else — out of range, not a number, missing — falls back to 24 and the script says so on stderr.
 
+`COUNTRY` (see the last section) sets the country used to drop region-restricted YouTube videos. When it is missing or not a two-letter code, nothing is dropped for region and the script says so on stderr. Pass that warning on in your report.
+
 `raw.json` contains:
 
-- `generatedAt`, `windowHours`, `sourceFile`, `entryCount`
+- `generatedAt`, `windowHours`, `country` (the code used, or `null`), `sourceFile`, `entryCount`
 - `entries`: newest first. Each one already has every field the output needs except `summary` and `tags`, which are empty for you to fill in. `description` is the feed's own text, cleaned to plain text — it is your raw material and is **not** part of the final output.
 - `sources`: every source that was fetched, with its entry count.
 - `errors`: sources that could not be fetched, each with the reason. Do not stop the run for these.
 - `warnings`: problems in `source.json` itself (missing link, duplicate link, unknown type).
-- `filtered`: how many entries were dropped as Shorts or for missing a title or link.
+- `filtered`: how many entries were dropped as Shorts (`shorts`), as YouTube videos not available in `country` (`regionRestricted`), or for missing a title or link (`missingFields`).
+
+Never add a dropped video back, by hand or otherwise. It must not appear in the JSON, the Markdown note or either index.
 
 For each source in `errors`, try once by hand with WebFetch — find its RSS feed or its latest posts — and apply the same time window. Entries found that way are summarised like any other. If that also fails, leave it in the report as a fetch issue.
 
@@ -73,7 +77,7 @@ Write the result to `<scratchpad>/enriched.json`: the same structure as `raw.jso
 node .claude/skills/news-feed/scripts/write.mjs <scratchpad>/enriched.json
 ```
 
-This writes three files under `output/data/`, using today's local date:
+This writes four files under `output/data/`, using today's local date:
 
 **`<Year>/<Month>/<YYYY-MM-DD>.json`**
 
@@ -81,6 +85,7 @@ This writes three files under `output/data/`, using today's local date:
 {
   "date": "2026-10-29",
   "updatedAt": "2026-10-29 13:40",
+  "coverage": 24,
   "entryCount": 5,
   "entries": [
     {
@@ -103,11 +108,55 @@ This writes three files under `output/data/`, using today's local date:
 }
 ```
 
-`duration` is **whole seconds** (`null` when unknown). `audioLink` and `videoId` are `null` when they do not apply.
+`coverage` is the `--hours` window the run used, as a number of hours (`24` means the last 24 hours). `duration` is **whole seconds** (`null` when unknown). `audioLink` and `videoId` are `null` when they do not apply.
 
-**`<Year>/<Month>/<YYYY-MM-DD>.md`** — the same entries as a note: frontmatter (`Date`, `Updated At`, `Entries`), an H1 of the date, one `##` section per entry with its thumbnail, the `Source` / `Published` / `Link` / `Category` / `Tags` fields and the summary, and a bold `⚠️ **Fetch issues**` block last.
+**`<Year>/<Month>/<YYYY-MM-DD>.md`** — the same entries as a note: frontmatter (`Date`, `Updated At`, `Coverage`, `Entries` — `Coverage` reads like `24 hours`), an H1 of the date, one `##` section per entry with its thumbnail, the `Source` / `Published` / `Link` / `Category` / `Tags` fields and the summary, and a bold `⚠️ **Fetch issues**` block last.
 
-**`index.json`** — one global index for later retrieval, rebuilt from the day files on every run: `dates` (newest first, each with its file path), `facets` (every `type`, `category`, `source` and `tag` in use) and `entries` (one lightweight record per entry, carrying `date`, `title`, `link`, `type`, `source`, `publisher`, `category`, `tags`, `publishedAt`, but no summary). That supports retrieval by exact date, date range, tag, category, type and source name.
+**`<Year>/<Month>/<YYYY-MM-DD>-index.json`** — the day's own index, e.g. `2026/10/2026-10-29-index.json`:
+
+```json
+{
+  "date": "2026-10-29",
+  "updatedAt": "2026-10-29 13:40",
+  "coverage": 24,
+  "entryCount": 5,
+  "path": "2026/10/2026-10-29.json",
+  "facets": { "types": [], "categories": [], "sources": [], "tags": [] },
+  "entries": [
+    {
+      "date": "2026-10-29",
+      "title": "...",
+      "link": "...",
+      "type": "YouTube",
+      "source": "BBC World Service",
+      "publisher": "BBC",
+      "category": ["News"],
+      "tags": ["tag1", "tag2"],
+      "publishedAt": "2026-10-20 05:25"
+    }
+  ]
+}
+```
+
+`facets` lists every `type`, `category`, `source` and `tag` used that day. `entries` holds one lightweight record per entry, with no summary.
+
+**`index.json`** — one global index for later retrieval. It has the same `facets` and `entries` as a day index, but across all days, plus `dates`, newest first:
+
+```json
+"dates": [
+  {
+    "date": "2026-10-29",
+    "coverage": 24,
+    "entryCount": 11,
+    "path": "2026/10/2026-10-29.json",
+    "indexPath": "2026/10/2026-10-29-index.json"
+  }
+]
+```
+
+`coverage` is copied from the day file, in hours. `path` and `indexPath` are relative to `output/data/`. That supports retrieval by exact date, date range, tag, category, type and source name.
+
+Both kinds of index are rebuilt from the day files on every run, so every past day's index is regenerated as well. A day file edited by hand is reflected in its index on the next run.
 
 ### Running more than once a day
 
@@ -115,18 +164,30 @@ The skill is meant to run once a day, but running it again is safe and is the no
 
 - Entries already in the day's file are left untouched, so **a summary you wrote earlier is never overwritten**. Only unseen entries are appended.
 - An entry counts as already present when its `link` matches, or its `videoId` for YouTube.
-- `updatedAt`, `entryCount`, the Markdown note and the index are all refreshed.
+- `updatedAt`, `entryCount`, the Markdown note and both indexes are all refreshed.
+- `coverage` is set to this run's `--hours`, replacing the earlier value. It records the window of the latest run, not the union of all runs.
 
-The script prints how many entries it added, how many it skipped as duplicates, and the three file paths.
+The script prints how many entries it added, how many it skipped as duplicates, and the four file paths.
 
-## Step 4: Report
+## Step 4: Build the site
+
+The website in `web/` is a static Next.js export: every day page is rendered into HTML at build time, so it only shows the new data once it is rebuilt.
+
+```bash
+cd web && ( [ -d node_modules ] || npm ci ) && npm run build
+```
+
+This writes the site to `web/out/` — `out/index.html` is today's page and `out/<YYYY-MM-DD>/index.html` is one page per date in the index. A failed build does not affect the data files written in Step 3; do not retry it repeatedly or edit the site code to make it pass. Report the error instead.
+
+## Step 5: Report
 
 Tell the user:
 
-- the paths of the JSON and Markdown files
+- the paths of the JSON, Markdown and day index files
+- whether the site build succeeded (`web/out/`), or the error it failed with
 - how many entries were added this run, and the day's total
 - the entry count per source, grouped by type
-- how many Shorts were filtered out
+- how many Shorts were filtered out, and how many region-restricted videos (with the `country` used, or the warning that it was not set)
 - every source in `errors`, with its reason, and every `source.json` warning
 
 ## What the scripts do, so you can read their output
@@ -135,7 +196,9 @@ Tell the user:
 - Sources are fetched concurrently (4 at a time), so one slow source does not hold up the others.
 - YouTube: the `@handle` page gives the `UC…` channel id, whose uploads playlist is the same id with `UC` swapped for `UU`. `playlistItems` lists the newest uploads, then **one batched `videos` call covers every channel at once**. Publish times come from `videos`, because `playlistItems` reports when a video joined the playlist rather than when it went out.
 - A YouTube video of **180 seconds or less is a Short and is dropped**. A video whose duration is unknown — live or upcoming — is kept rather than guessed away.
+- A YouTube video that cannot be watched in `COUNTRY` is dropped: its `contentDetails.regionRestriction.allowed` list **does not include** `COUNTRY`, or its `regionRestriction.blocked` list **includes** it. A video with neither list is kept.
 - An entry with no title or no link is dropped.
 - Podcast `duration` comes from `itunes:duration`, which may be seconds, `MM:SS` or `H:MM:SS`; all spellings are normalised to seconds.
 - All dates are local time. `publishedAt` is `YYYY-MM-DD HH:mm` and sorts correctly as plain text.
 - `YT_API_KEY` is read from the environment, or from `.env` at the project root. Without it, only the YouTube sources fail; podcasts and blogs still produce a digest.
+- `COUNTRY` is read the same way: the ISO 3166-1 alpha-2 code of the country the digest is watched from, such as `AU`. Case does not matter.

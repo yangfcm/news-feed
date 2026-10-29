@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Turn the enriched entries into the day's JSON, its Markdown note, and the global index.
+// Turn the enriched entries into the day's JSON, its Markdown note, its day index, and the
+// global index.
 //
 //   node write.mjs <enriched.json> [--out output/data]
 //
@@ -67,6 +68,7 @@ function renderMarkdown(day) {
     "---",
     `Date: ${day.date}`,
     `Updated At: ${day.updatedAt}`,
+    `Coverage: ${day.coverage === null ? "unknown" : `${day.coverage} hours`}`,
     `Entries: ${day.entryCount}`,
     "---",
     "",
@@ -109,19 +111,45 @@ function writeFile(path, contents) {
   writeFileSync(path, contents);
 }
 
+/** Day files are named <YYYY-MM-DD>.json; this excludes index.json and <YYYY-MM-DD>-index.json. */
+const DAY_FILE = /^\d{4}-\d{2}-\d{2}\.json$/;
+
+/** The lightweight, summary-free record an index keeps for one entry. */
+function indexRecord(date, entry) {
+  const record = {};
+  for (const field of INDEX_FIELDS) record[field] = field === "date" ? date : entry[field] ?? (field === "category" || field === "tags" ? [] : "");
+  return record;
+}
+
+function collectFacets(records) {
+  const facets = { types: new Set(), categories: new Set(), sources: new Set(), tags: new Set() };
+  for (const record of records) {
+    if (record.type) facets.types.add(record.type);
+    if (record.source) facets.sources.add(record.source);
+    for (const c of record.category) facets.categories.add(c);
+    for (const t of record.tags) facets.tags.add(t);
+  }
+  return {
+    types: [...facets.types].sort(),
+    categories: [...facets.categories].sort(),
+    sources: [...facets.sources].sort(),
+    tags: [...facets.tags].sort(),
+  };
+}
+
 /**
- * Rebuild the index from whatever day files are on disk, rather than appending to the
- * previous index. A day file that was edited or deleted by hand can then never leave a
- * stale record behind.
+ * Rebuild every day's index and the global index from whatever day files are on disk,
+ * rather than appending to the previous index. A day file that was edited or deleted by
+ * hand can then never leave a stale record behind.
  */
-function rebuildIndex(outDir) {
+function rebuildIndexes(outDir) {
   const entries = [];
   const dates = [];
-  const facets = { types: new Set(), categories: new Set(), sources: new Set(), tags: new Set() };
+  const relative = (path) => path.slice(outDir.length + 1).split("\\").join("/");
 
   if (existsSync(outDir)) {
     for (const dirent of readdirSync(outDir, { recursive: true, withFileTypes: true })) {
-      if (!dirent.isFile() || !dirent.name.endsWith(".json") || dirent.name === "index.json") continue;
+      if (!dirent.isFile() || !DAY_FILE.test(dirent.name)) continue;
       const full = join(dirent.parentPath ?? dirent.path, dirent.name);
       let day;
       try {
@@ -132,20 +160,27 @@ function rebuildIndex(outDir) {
       }
       if (!day?.date || !Array.isArray(day.entries)) continue;
 
+      const records = day.entries.map((entry) => indexRecord(day.date, entry)).sort(byPublishedDesc);
+      const dayIndexPath = full.replace(/\.json$/, "-index.json");
+      const dayIndex = {
+        date: day.date,
+        updatedAt: day.updatedAt ?? "",
+        coverage: day.coverage ?? null,
+        entryCount: records.length,
+        path: relative(full),
+        facets: collectFacets(records),
+        entries: records,
+      };
+      writeFile(dayIndexPath, `${JSON.stringify(dayIndex, null, 2)}\n`);
+
       dates.push({
         date: day.date,
-        entryCount: day.entries.length,
-        path: full.slice(outDir.length + 1).split("\\").join("/"),
+        coverage: day.coverage ?? null,
+        entryCount: records.length,
+        path: relative(full),
+        indexPath: relative(dayIndexPath),
       });
-      for (const entry of day.entries) {
-        const record = {};
-        for (const field of INDEX_FIELDS) record[field] = field === "date" ? day.date : entry[field] ?? (field === "category" || field === "tags" ? [] : "");
-        entries.push(record);
-        if (entry.type) facets.types.add(entry.type);
-        if (entry.source) facets.sources.add(entry.source);
-        for (const c of entry.category || []) facets.categories.add(c);
-        for (const t of entry.tags || []) facets.tags.add(t);
-      }
+      entries.push(...records);
     }
   }
 
@@ -157,12 +192,7 @@ function rebuildIndex(outDir) {
     dateCount: dates.length,
     entryCount: entries.length,
     dates,
-    facets: {
-      types: [...facets.types].sort(),
-      categories: [...facets.categories].sort(),
-      sources: [...facets.sources].sort(),
-      tags: [...facets.tags].sort(),
-    },
+    facets: collectFacets(entries),
     entries,
   };
 }
@@ -187,11 +217,15 @@ function main() {
   const [year, month] = date.split("-");
   const jsonPath = join(outDir, year, month, `${date}.json`);
   const mdPath = join(outDir, year, month, `${date}.md`);
+  const dayIndexPath = join(outDir, year, month, `${date}-index.json`);
 
   let existing = [];
+  let previousCoverage = null;
   if (existsSync(jsonPath)) {
     try {
-      existing = readJson(jsonPath).entries || [];
+      const previous = readJson(jsonPath);
+      existing = previous.entries || [];
+      previousCoverage = previous.coverage ?? null;
     } catch {
       console.error(`warning: ${jsonPath} was unreadable and will be replaced`);
     }
@@ -209,6 +243,8 @@ function main() {
   const day = {
     date,
     updatedAt: localDateTime(now),
+    // The hours window of the latest run that wrote this day.
+    coverage: typeof input.windowHours === "number" ? input.windowHours : previousCoverage,
     entryCount: existing.length + added.length,
     entries: [...existing.map(shape), ...added].sort(byPublishedDesc),
     errors: input.errors || [],
@@ -218,12 +254,13 @@ function main() {
   writeFile(mdPath, renderMarkdown(day));
 
   const indexPath = join(outDir, "index.json");
-  const index = rebuildIndex(outDir);
+  const index = rebuildIndexes(outDir);
   writeFile(indexPath, `${JSON.stringify(index, null, 2)}\n`);
 
   const summary = {
     json: jsonPath,
     markdown: mdPath,
+    dayIndex: dayIndexPath,
     index: indexPath,
     added: added.length,
     skippedAsDuplicate: incoming.length - added.length,

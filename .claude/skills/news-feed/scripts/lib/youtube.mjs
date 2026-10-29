@@ -65,6 +65,18 @@ export async function fetchVideos(ids, key) {
   return out;
 }
 
+/**
+ * False when the video lists the only countries it can be watched in and `country` is not
+ * one of them, or lists the countries it is blocked in and `country` is one of them.
+ * A video with neither list is available everywhere.
+ */
+export function watchableIn(video, country) {
+  const { allowed, blocked } = video?.contentDetails?.regionRestriction ?? {};
+  if (Array.isArray(allowed) && !allowed.includes(country)) return false;
+  if (Array.isArray(blocked) && blocked.includes(country)) return false;
+  return true;
+}
+
 export function bestThumbnail(thumbnails) {
   if (!thumbnails) return "";
   for (const key of THUMB_ORDER) if (thumbnails[key]?.url) return thumbnails[key].url;
