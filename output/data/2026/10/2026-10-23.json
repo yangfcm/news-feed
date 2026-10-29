@@ -1,6 +1,6 @@
 {
   "date": "2026-10-23",
-  "updatedAt": "2026-10-29 23:58",
+  "updatedAt": "2026-10-30 00:15",
   "entryCount": 14,
   "entries": [
     {
@@ -14,8 +14,13 @@
       "category": [
         "News"
       ],
-      "summary": "",
-      "tags": [],
+      "summary": "英格兰板球队新任测试赛主教练、新西兰人斯蒂芬·弗莱明表示，国家队应当由英格兰本土教练执教。他将于 12 月在南非执教首个测试赛系列，延续了英格兰男队由外籍教练带队的传统。节目中，Alison Mitchell、Jim Maxwell 和 Charu Sharma 讨论了本土教练与外籍教练的利弊、聘请外籍教练的诱惑、澳大利亚对本土教练的信心，以及英格兰的教练继任规划和成功的标准。",
+      "tags": [
+        "cricket",
+        "england-cricket",
+        "coaching",
+        "stephen-fleming"
+      ],
       "audioLink": null,
       "videoId": "alcZ54awTCM",
       "duration": 993
@@ -31,8 +36,14 @@
       "category": [
         "Tech"
       ],
-      "summary": "",
-      "tags": [],
+      "summary": "主持人 Ryan 在 LDX3 大会现场对话曾任职 Netflix 和 Spotify 的工程负责人 Nivia Henry。两人讨论了所谓“SaaS 末日”的真实情况，认为传言言过其实；探讨了 AI 时代“自建还是采购”这一决策的复杂权衡；并强调理解系统架构对于控制长期基础设施成本的重要性。",
+      "tags": [
+        "saas",
+        "build-vs-buy",
+        "engineering-leadership",
+        "ai",
+        "infrastructure-costs"
+      ],
       "audioLink": "https://rss.art19.com/episodes/a9d1713f-be14-4891-bf05-658f7c9b1c06.mp3?rss_browser=BAhJIgtDaHJvbWUGOgZFVA%3D%3D--d05363d83ce333c74f32188013892b2863ad051c",
       "videoId": null,
       "duration": 1538
@@ -49,8 +60,14 @@
         "Tech",
         "Knowledge"
       ],
-      "summary": "",
-      "tags": [],
+      "summary": "本期周刊的主题文章介绍了一位国外资深程序员对 AI 如何彻底改变编程的激进判断：人工逐行代码审查和单元测试可能消失，开发重点从写代码转向理解业务、发布和收集反馈，Bug 多源于需求表达不准，敏捷方法、“好代码”标准、代码风格规范和精致 UI 的意义都在下降，而谁负担得起更多 Token，谁就能做出更好的软件。作者还批评了一家美国公司声称 Qwen3-Coder 会针对美国国防承包商生成劣质代码的文章，指出其选用过时小模型作为唯一样本，且自身就在出售“安全化”的同款模型，但也承认大模型是否会区别对待用户是一个严肃问题。另一则新闻是印度证书颁发机构 eMudhra 的八把私钥都是 255 以内的整数，可被瞬间破解，各大浏览器已紧急撤销对其证书的信任。此外，本期还收录了 Simon Willison 的 2026 年大模型回顾、陶哲轩反对用大模型求证数学难题、自托管服务、硬件钱包、模拟终端的小模型等文章，以及 sslx、Mac.apk、siltop 等工具，法国高速公路路标图片，以及解释眯眼能看得更清楚源于针孔效应的文摘。",
+      "tags": [
+        "ai-programming",
+        "software-development",
+        "llm",
+        "pki-security",
+        "weekly-newsletter"
+      ],
       "audioLink": null,
       "videoId": null,
       "duration": null
@@ -66,8 +83,13 @@
       "category": [
         "Football"
       ],
-      "summary": "",
-      "tags": [],
+      "summary": "ESPN FC 的 Futbol Americas 节目全员预测本周末巴塞罗那与皇家马德里的国家德比。Dan Thomas 和 Craig Burley 加入讨论，话题包括汉西·弗利克在备战中对国家德比的关注，以及拉菲尼亚的状态，Craig Burley 给出了他对比赛结果的判断。",
+      "tags": [
+        "el-clasico",
+        "barcelona",
+        "real-madrid",
+        "la-liga"
+      ],
       "audioLink": null,
       "videoId": "eFc59WFZxrw",
       "duration": 512
@@ -83,8 +105,13 @@
       "category": [
         "Football"
       ],
-      "summary": "",
-      "tags": [],
+      "summary": "在 Futbol Americas 节目中，Craig Burley 和 Dan Thomas 与 Alexis Nunes、Herculez Gomez 一起前瞻巴塞罗那对阵皇家马德里的国家德比，几位嘉宾围绕比赛展开了激烈争论。",
+      "tags": [
+        "el-clasico",
+        "barcelona",
+        "real-madrid",
+        "la-liga"
+      ],
       "audioLink": null,
       "videoId": "LrAWyb9Kjmo",
       "duration": 384
@@ -100,8 +127,13 @@
       "category": [
         "Football"
       ],
-      "summary": "",
-      "tags": [],
+      "summary": "前巴萨球员塞尔吉·罗伯托做客 Futbol Americas，前瞻巴塞罗那对阵皇家马德里的国家德比。他谈到汉西·弗利克给巴萨带来的变化、巴萨在这场比赛中需要做好的关键点以及中场的调整，并给出了巴萨 3-0 取胜的比分预测。",
+      "tags": [
+        "el-clasico",
+        "barcelona",
+        "real-madrid",
+        "sergi-roberto"
+      ],
       "audioLink": null,
       "videoId": "VESa3Z62RfU",
       "duration": 686
@@ -117,8 +149,14 @@
       "category": [
         "Football"
       ],
-      "summary": "",
-      "tags": [],
+      "summary": "Shaka Hislop、Ale Moreno、Don Hutchison、Craig Burley 和 Dan Thomas 与主持人 Kay Murray 讨论布鲁诺·费尔南德斯公开批评主帅迈克尔·卡里克的言论，以及曼联下一步该怎么走。节目还前瞻了国家德比、利物浦对布莱顿和切尔西对热刺的比赛，并公布了 Shaka 的球队实力排名。",
+      "tags": [
+        "manchester-united",
+        "bruno-fernandes",
+        "michael-carrick",
+        "el-clasico",
+        "premier-league"
+      ],
       "audioLink": null,
       "videoId": "uyIZTlkUgu8",
       "duration": 2689
@@ -134,8 +172,14 @@
       "category": [
         "Football"
       ],
-      "summary": "",
-      "tags": [],
+      "summary": "在 ESPN FC Extra Time 中，Shaka Hislop、Ale Moreno 和 Don Hutchison 回答观众提问：皇马是否会后悔与维尼修斯续约，曼联夏季引援该打几分，巴黎圣日耳曼在克瓦拉茨赫利亚受伤后是否仍是欧冠热门，杜埃能否达到拉明·亚马尔的水平，以及布莱顿能否进入英超前五等。",
+      "tags": [
+        "real-madrid",
+        "vinicius-junior",
+        "psg",
+        "manchester-united",
+        "champions-league"
+      ],
       "audioLink": null,
       "videoId": "O4nG4Pxc81k",
       "duration": 778
@@ -151,8 +195,14 @@
       "category": [
         "Football"
       ],
-      "summary": "",
-      "tags": [],
+      "summary": "Shaka Hislop、Ale Moreno 和 Don Hutchison 与 Kay Murray 讨论对英超两场焦点战的预期：状态出色的布莱顿能否在对阵利物浦时延续表现，以及切尔西与托特纳姆热刺的伦敦德比。",
+      "tags": [
+        "premier-league",
+        "brighton",
+        "liverpool",
+        "chelsea",
+        "tottenham"
+      ],
       "audioLink": null,
       "videoId": "_7GxbvCG0LQ",
       "duration": 391
@@ -168,8 +218,13 @@
       "category": [
         "Football"
       ],
-      "summary": "",
-      "tags": [],
+      "summary": "Shaka Hislop、Ale Moreno、Don Hutchison、Craig Burley 和 Dan Thomas 与 Kay Murray 前瞻周日巴塞罗那对阵皇家马德里的西甲国家德比，讨论皇马能否与巴萨抗衡，以及这场比赛将如何影响本赛季余下的走势。",
+      "tags": [
+        "el-clasico",
+        "barcelona",
+        "real-madrid",
+        "la-liga"
+      ],
       "audioLink": null,
       "videoId": "hSWXbJKykgE",
       "duration": 391
@@ -185,8 +240,13 @@
       "category": [
         "Football"
       ],
-      "summary": "",
-      "tags": [],
+      "summary": "Shaka Hislop、Ale Moreno、Don Hutchison、Craig Burley 和 Dan Thomas 与 Kay Murray 讨论曼联本赛季至今令人失望的表现，以及布鲁诺·费尔南德斯公开批评主帅迈克尔·卡里克一事，嘉宾认为两人之中必须走一个。",
+      "tags": [
+        "manchester-united",
+        "bruno-fernandes",
+        "michael-carrick",
+        "premier-league"
+      ],
       "audioLink": null,
       "videoId": "56wDaqc1g8g",
       "duration": 942
@@ -202,8 +262,13 @@
       "category": [
         "News"
       ],
-      "summary": "",
-      "tags": [],
+      "summary": "有些人饮酒后不仅头痛，还会感到内疚、恐惧、情绪低落和强烈的尴尬，这被称为“宿醉焦虑”（hangxiety），科学研究证实这是真实存在的现象：酒精影响全身各系统，包括大脑，因此会引发心理症状。《Hangxiety》一书作者 Millie Gooch 解释了酒精作用消退时神经系统和大脑受到的影响，并讲述宿醉焦虑在她戒酒过程中的作用。节目还采访了一些人，讲述焦虑如何改变了他们与酒精的关系。",
+      "tags": [
+        "hangxiety",
+        "alcohol",
+        "anxiety",
+        "mental-health"
+      ],
       "audioLink": null,
       "videoId": "N9HIZ7yo2YA",
       "duration": 539
@@ -219,8 +284,13 @@
       "category": [
         "News"
       ],
-      "summary": "",
-      "tags": [],
+      "summary": "过去两周，美国与乌克兰的关系接连遭遇重大挫折：特朗普达成了购买俄罗斯柴油的协议，为普京的战争提供了资金支持；他曾短暂中断与乌克兰的情报共享；其特使史蒂夫·威特科夫还称赞普京是一位“人道主义者”。本期节目中，CNN 首席国家安全分析师 Jim Sciutto 分析了特朗普的意图，以及这对乌克兰的存亡可能意味着什么。",
+      "tags": [
+        "donald-trump",
+        "vladimir-putin",
+        "ukraine-war",
+        "us-foreign-policy"
+      ],
       "audioLink": "https://mediacore-live-production.akamaized.net/audio/02/pm/Z/q2.mp3",
       "videoId": null,
       "duration": 963
@@ -236,8 +306,13 @@
       "category": [
         "News"
       ],
-      "summary": "",
-      "tags": [],
+      "summary": "从印度到法国、意大利和阿尔巴尼亚，世界各地的年轻人纷纷走上街头抗议。视频回顾了 10 月同一周内四个国家爆发的抗议：印度的“蟑螂”抗议、法国的教育抗议、蔓延到意大利的抗议，以及阿尔巴尼亚的“火烈鸟”抗议。节目分析了这些 Z 世代抗议的共同点、社交媒体的作用、彼此之间的差异，以及各国政府的回应。",
+      "tags": [
+        "gen-z",
+        "protests",
+        "social-media",
+        "global-politics"
+      ],
       "audioLink": null,
       "videoId": "lYZTVDIshSw",
       "duration": 301
