@@ -1,6 +1,6 @@
 ---
 name: news-feed
-description: Build the news digest from the sources listed in input/source.json (podcasts, YouTube channels and blogs). Collects everything published in the last 24 hours (or a given number of hours, or on a given date), writes a Chinese summary and tags for each item, and files each item under its own publish date — a JSON file, a Markdown note and a day index per date under output/data/<Year>/<Month>/, plus a global searchable index.
+description: Build the news digest from the sources listed in input/source.json (podcasts, YouTube channels and blogs). Collects everything published in the last 24 hours (or a given number of hours, or on a given date), writes a Chinese summary and tags for each item, and files each item under its own publish date — a JSON file and a Markdown note per date under output/data/<Year>/<Month>/, plus an index of the dates.
 user-invocable: true
 argument-hint: "[hours 1-96 | date YYYY-MM-DD, YYYY/MM/DD or YYYYMMDD; default 24 hours]"
 ---
@@ -26,7 +26,7 @@ The work splits in two: the scripts do all fetching, merging and rendering; you 
 - Never reuse a source list from memory or from an earlier digest. Step 1 re-reads the file in full.
 - `type` is currently `Podcast`, `YouTube` or `Blog`, but a new value may appear at any time. The script reads an unknown type's `link` as an RSS/Atom feed and warns on stderr. Pass that warning on in your report so the user knows the type was not specially handled.
 - A source removed from the file simply stops appearing. Entries already written into past day files stay there; do not go back and delete them.
-- Categories, tags, types and source names in the index are derived from the data on every run. Nothing about the source list is hardcoded anywhere.
+- Categories, tags, types and source names are taken from the data on every run. Nothing about the source list is hardcoded anywhere.
 
 ## Step 1: Fetch the entries
 
@@ -55,7 +55,7 @@ Pass the argument on as is: if it is 8 digits or contains `-` or `/`, as `--date
 - `warnings`: problems in `source.json` itself (missing link, duplicate link, unknown type).
 - `filtered`: how many entries were dropped as Shorts (`shorts`), as YouTube videos not available in `country` (`regionRestricted`), or for missing a title or link (`missingFields`).
 
-Never add a dropped video back, by hand or otherwise. It must not appear in the JSON, the Markdown note or either index.
+Never add a dropped video back, by hand or otherwise. It must not appear in the JSON or the Markdown note.
 
 For each source in `errors`, try once by hand with WebFetch — find its RSS feed or its latest posts — and apply the same time window. Entries found that way are summarised like any other. If that also fails, leave it in the report as a fetch issue.
 
@@ -90,7 +90,7 @@ Write the result to `<scratchpad>/enriched.json`: the same structure as `raw.jso
 node .claude/skills/news-feed/scripts/write.mjs <scratchpad>/enriched.json
 ```
 
-Each entry goes into the files of its publish date — the local date at the start of its `publishedAt`. For every date that gains, loses or changes an entry, the script writes the three day files below. The **run date's** day file — `targetDate` for a date fetch, else today's local date — is always written, even when it ends up with no entries, because it is the one that records this run's fetch errors. Then it rebuilds the global index. A `publishedAt` in the future — a podcast scheduled ahead — goes into that future date's file.
+Each entry goes into the files of its publish date — the local date at the start of its `publishedAt`. For every date that gains, loses or changes an entry, the script writes the two day files below. The **run date's** day file — `targetDate` for a date fetch, else today's local date — is always written, even when it ends up with no entries, because it is the one that records this run's fetch errors. Then it rebuilds `index.json`. A `publishedAt` in the future — a podcast scheduled ahead — goes into that future date's file.
 
 **`<Year>/<Month>/<YYYY-MM-DD>.json`**
 
@@ -124,49 +124,26 @@ Each entry goes into the files of its publish date — the local date at the sta
 
 **`<Year>/<Month>/<YYYY-MM-DD>.md`** — the same entries as a note: frontmatter (`Date`, `Updated At`, `Entries`), an H1 of the date, one `##` section per entry with its thumbnail, the `Source` / `Published` / `Link` / `Category` / `Tags` / `Summary` fields, and a bold `⚠️ **Fetch issues**` block last. `Tags` and `Summary` are left out of an entry that has none, which happens when the digest is made without Claude (`npm run digest`); the website hides them the same way.
 
-**`<Year>/<Month>/<YYYY-MM-DD>-index.json`** — the day's own index, e.g. `2026/10/2026-10-29-index.json`:
+**`index.json`** — the list of dates that have a day file, newest first, which the website builds its calendar and pages from:
 
 ```json
 {
-  "date": "2026-10-29",
   "updatedAt": "2026-10-29 13:40",
-  "entryCount": 5,
-  "path": "2026/10/2026-10-29.json",
-  "facets": { "types": [], "categories": [], "sources": [], "tags": [] },
-  "entries": [
+  "dateCount": 1,
+  "entryCount": 11,
+  "dates": [
     {
       "date": "2026-10-29",
-      "title": "...",
-      "link": "...",
-      "type": "YouTube",
-      "source": "BBC World Service",
-      "publisher": "BBC",
-      "category": ["News"],
-      "tags": ["tag1", "tag2"],
-      "publishedAt": "2026-10-20 05:25"
+      "entryCount": 11,
+      "path": "2026/10/2026-10-29.json"
     }
   ]
 }
 ```
 
-`facets` lists every `type`, `category`, `source` and `tag` used that day. `entries` holds one lightweight record per entry, with no summary.
+`path` is relative to `output/data/`. There is no index of the entries themselves: the website filters each day's entries on that day's page, and the day files are the only record of what was collected.
 
-**`index.json`** — one global index for later retrieval. It has the same `facets` and `entries` as a day index, but across all days, plus `dates`, newest first:
-
-```json
-"dates": [
-  {
-    "date": "2026-10-29",
-    "entryCount": 11,
-    "path": "2026/10/2026-10-29.json",
-    "indexPath": "2026/10/2026-10-29-index.json"
-  }
-]
-```
-
-`path` and `indexPath` are relative to `output/data/`. That supports retrieval by exact date, date range, tag, category, type and source name.
-
-Both kinds of index are rebuilt from the day files on every run, so every past day's index is regenerated as well. A day file edited by hand is reflected in its index on the next run.
+`index.json` is rebuilt from the day files on every run, so a day file edited or deleted by hand is reflected in it on the next run.
 
 ### Running more than once a day
 
@@ -177,11 +154,11 @@ The skill is meant to run once a day, but running it again is safe and is the no
 - **`summary` and `tags` are only replaced by non-empty values.** Left empty, the earlier ones are kept, so a summary written earlier is never lost — not even to a run without Claude (`npm run digest`). Conversely, a later skill run fills in the summaries such a run left empty.
 - **A new entry is appended.**
 - **An entry this fetch did not return is kept as it is** — whether it fell outside a shorter `--hours` window or another `--date`, its source failed this time, or it was filtered out. Nothing is ever removed from a day file by a re-run.
-- **An entry in the wrong day file is moved** to the file of its publish date — for instance after its `publishedAt` changed, or in a file written before entries were filed by publish date. A file left empty by such moves is deleted along with its note and day index. The same item found in two day files is merged into one, keeping any summary and tags.
+- **An entry in the wrong day file is moved** to the file of its publish date — for instance after its `publishedAt` changed, or in a file written before entries were filed by publish date. A file left empty by such moves is deleted along with its note. The same item found in two day files is merged into one, keeping any summary and tags.
 - A day file whose content did not change is left exactly as it is, `updatedAt` included.
-- `updatedAt`, `entryCount` and the Markdown note of every day file written, and both indexes, are refreshed.
+- `updatedAt`, `entryCount` and the Markdown note of every day file written, and `index.json`, are refreshed.
 
-The script prints, for every day file it wrote, its date, its three paths, how many entries it added and updated and its total (`days`); the day files it removed (`removed`); how many entries it moved between days (`moved`); the totals added and updated; how many it skipped as duplicates within this run; and the global index path.
+The script prints, for every day file it wrote, its date, its JSON and Markdown paths, how many entries it added and updated and its total (`days`); the day files it removed (`removed`); how many entries it moved between days (`moved`); the totals added and updated; how many it skipped as duplicates within this run; and the path of `index.json`.
 
 ## Step 4: Build the site
 
@@ -199,7 +176,7 @@ Tell the user:
 
 - the window used: the hours, or the date
 
-- for every day file written: its date, the paths of its JSON, Markdown and day index files, how many entries were added and updated, and that day's total
+- for every day file written: its date, the paths of its JSON and Markdown files, how many entries were added and updated, and that day's total
 - any day files removed and the number of entries moved between days, when there were any
 - whether the site build succeeded (`web/out/`), or the error it failed with
 - the entry count per source, grouped by type

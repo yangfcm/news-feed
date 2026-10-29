@@ -37,7 +37,6 @@ export type IndexDate = {
   entryCount: number;
   /** Relative to output/data/. */
   path: string;
-  indexPath?: string;
 };
 
 export type GlobalIndex = {

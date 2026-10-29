@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Turn the enriched entries into day files — each entry goes into the file of its own
-// publish date, so one run may write several — plus their Markdown notes, day indexes and
-// the global index.
+// publish date, so one run may write several — plus their Markdown notes and the index of
+// dates.
 //
 //   node write.mjs <enriched.json> [--out output/data]
 //
@@ -31,8 +31,6 @@ const ENTRY_FIELDS = [
   "videoId",
   "duration",
 ];
-
-const INDEX_FIELDS = ["date", "title", "link", "type", "source", "publisher", "category", "tags", "publishedAt"];
 
 function parseArgs(argv) {
   const positional = [];
@@ -135,7 +133,7 @@ function writeFile(path, contents) {
 
 const serialise = (value) => `${JSON.stringify(value, null, 2)}\n`;
 
-/** Day files are named <YYYY-MM-DD>.json; this excludes index.json and <YYYY-MM-DD>-index.json. */
+/** Day files are named <YYYY-MM-DD>.json; this excludes index.json. */
 const DAY_FILE = /^\d{4}-\d{2}-\d{2}\.json$/;
 
 const dayPath = (outDir, date) => join(outDir, ...date.split("-").slice(0, 2), `${date}.json`);
@@ -162,79 +160,29 @@ function readDayFiles(outDir, { warn = true } = {}) {
   return days;
 }
 
-/** A day file, its Markdown note and its day index. */
+/** A day file and its Markdown note. */
 function removeDay(jsonPath) {
-  for (const path of [jsonPath, jsonPath.replace(/\.json$/, ".md"), jsonPath.replace(/\.json$/, "-index.json")]) {
-    rmSync(path, { force: true });
-  }
-}
-
-/** The lightweight, summary-free record an index keeps for one entry. */
-function indexRecord(date, entry) {
-  const record = {};
-  for (const field of INDEX_FIELDS) record[field] = field === "date" ? date : entry[field] ?? (field === "category" || field === "tags" ? [] : "");
-  return record;
-}
-
-function collectFacets(records) {
-  const facets = { types: new Set(), categories: new Set(), sources: new Set(), tags: new Set() };
-  for (const record of records) {
-    if (record.type) facets.types.add(record.type);
-    if (record.source) facets.sources.add(record.source);
-    for (const c of record.category) facets.categories.add(c);
-    for (const t of record.tags) facets.tags.add(t);
-  }
-  return {
-    types: [...facets.types].sort(),
-    categories: [...facets.categories].sort(),
-    sources: [...facets.sources].sort(),
-    tags: [...facets.tags].sort(),
-  };
+  for (const path of [jsonPath, jsonPath.replace(/\.json$/, ".md")]) rmSync(path, { force: true });
 }
 
 /**
- * Rebuild every day's index and the global index from whatever day files are on disk,
- * rather than appending to the previous index. A day file that was edited or deleted by
- * hand can then never leave a stale record behind.
+ * Rebuild the index of dates from whatever day files are on disk, rather than appending to
+ * the previous index. A day file that was edited or deleted by hand can then never leave a
+ * stale record behind. The site only needs to know which days exist and where their files
+ * are; per-entry filtering happens on each day's own page.
  */
-function rebuildIndexes(outDir) {
-  const entries = [];
-  const dates = [];
+function rebuildIndex(outDir) {
   const relative = (path) => path.slice(outDir.length + 1).split("\\").join("/");
-
-  // Re-read rather than reuse what main() loaded, so the indexes match the disk exactly.
-  for (const day of readDayFiles(outDir, { warn: false })) {
-    const records = day.entries.map((entry) => indexRecord(day.date, entry)).sort(byPublishedDesc);
-    const dayIndexPath = day.path.replace(/\.json$/, "-index.json");
-    const dayIndex = {
-      date: day.date,
-      updatedAt: day.updatedAt ?? "",
-      entryCount: records.length,
-      path: relative(day.path),
-      facets: collectFacets(records),
-      entries: records,
-    };
-    writeFile(dayIndexPath, serialise(dayIndex));
-
-    dates.push({
-      date: day.date,
-      entryCount: records.length,
-      path: relative(day.path),
-      indexPath: relative(dayIndexPath),
-    });
-    entries.push(...records);
-  }
-
-  dates.sort((a, b) => (a.date < b.date ? 1 : -1));
-  entries.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : byPublishedDesc(a, b)));
+  // Re-read rather than reuse what main() loaded, so the index matches the disk exactly.
+  const dates = readDayFiles(outDir, { warn: false })
+    .map((day) => ({ date: day.date, entryCount: day.entries.length, path: relative(day.path) }))
+    .sort((a, b) => (a.date < b.date ? 1 : -1));
 
   return {
     updatedAt: localDateTime(new Date()),
     dateCount: dates.length,
-    entryCount: entries.length,
+    entryCount: dates.reduce((sum, d) => sum + d.entryCount, 0),
     dates,
-    facets: collectFacets(entries),
-    entries,
   };
 }
 
@@ -341,14 +289,13 @@ function main() {
       date,
       json: jsonPath,
       markdown: mdPath,
-      dayIndex: jsonPath.replace(/\.json$/, "-index.json"),
       ...(stats.get(date) ?? { added: 0, updated: 0 }),
       entryCount: day.entryCount,
     });
   }
 
   const indexPath = join(outDir, "index.json");
-  const index = rebuildIndexes(outDir);
+  const index = rebuildIndex(outDir);
   writeFile(indexPath, serialise(index));
 
   const total = (field) => [...stats.values()].reduce((sum, s) => sum + s[field], 0);
