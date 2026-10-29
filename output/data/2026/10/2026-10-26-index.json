@@ -1,0 +1,141 @@
+{
+  "date": "2026-10-26",
+  "updatedAt": "2026-10-29 23:55",
+  "entryCount": 9,
+  "path": "2026/10/2026-10-26.json",
+  "facets": {
+    "types": [
+      "Podcast",
+      "YouTube"
+    ],
+    "categories": [
+      "Football",
+      "News"
+    ],
+    "sources": [
+      "ABC News Daily",
+      "BBC World Service",
+      "ESPN FC"
+    ],
+    "tags": []
+  },
+  "entries": [
+    {
+      "date": "2026-10-26",
+      "title": "AI and Data Centres: What's the climate cost? - The Climate Question podcast, BBC World Service",
+      "link": "https://www.youtube.com/watch?v=-X_KkGrFbPA",
+      "type": "YouTube",
+      "source": "BBC World Service",
+      "publisher": "BBC",
+      "category": [
+        "News"
+      ],
+      "tags": [],
+      "publishedAt": "2026-10-26 23:30"
+    },
+    {
+      "date": "2026-10-26",
+      "title": "FULL REACTION to Real Madrid’s win over Barcelona in El Clasico 🍿 + Man United lose again | ESPN FC",
+      "link": "https://www.youtube.com/watch?v=zLgg4ZIUQBI",
+      "type": "YouTube",
+      "source": "ESPN FC",
+      "publisher": "ESPN",
+      "category": [
+        "Football"
+      ],
+      "tags": [],
+      "publishedAt": "2026-10-26 10:35"
+    },
+    {
+      "date": "2026-10-26",
+      "title": "Arsenal FC vs. Newell’s Old Boys | Messi Cup Highlights | ESPN on Disney+",
+      "link": "https://www.youtube.com/watch?v=HN7svg-OMhQ",
+      "type": "YouTube",
+      "source": "ESPN FC",
+      "publisher": "ESPN",
+      "category": [
+        "Football"
+      ],
+      "tags": [],
+      "publishedAt": "2026-10-26 10:00"
+    },
+    {
+      "date": "2026-10-26",
+      "title": "Is Real Madrid back in the LALIGA title race after defeating Barcelona in El Clasico? 👀  | ESPN FC",
+      "link": "https://www.youtube.com/watch?v=BQlopYHmGqU",
+      "type": "YouTube",
+      "source": "ESPN FC",
+      "publisher": "ESPN",
+      "category": [
+        "Football"
+      ],
+      "tags": [],
+      "publishedAt": "2026-10-26 09:55"
+    },
+    {
+      "date": "2026-10-26",
+      "title": "An outstanding performance? 🔥 Reacting to Liverpool’s win vs. Brighton | ESPN FC",
+      "link": "https://www.youtube.com/watch?v=3l2mGy7uHWI",
+      "type": "YouTube",
+      "source": "ESPN FC",
+      "publisher": "ESPN",
+      "category": [
+        "Football"
+      ],
+      "tags": [],
+      "publishedAt": "2026-10-26 09:43"
+    },
+    {
+      "date": "2026-10-26",
+      "title": "Is this ROCK BOTTOM for Carrick and Man United? 😳 Reaction to 3-0 loss to Bournemouth | ESPN FC",
+      "link": "https://www.youtube.com/watch?v=IdYaHGkFkqs",
+      "type": "YouTube",
+      "source": "ESPN FC",
+      "publisher": "ESPN",
+      "category": [
+        "Football"
+      ],
+      "tags": [],
+      "publishedAt": "2026-10-26 09:37"
+    },
+    {
+      "date": "2026-10-26",
+      "title": "MBAPPE WINS IT FOR REAL MADRID VS. BARCELONA IN EL CLASICO 🔥 LALIGA title race back on? 👀 | ESPN FC",
+      "link": "https://www.youtube.com/watch?v=b2XzDh2Anfk",
+      "type": "YouTube",
+      "source": "ESPN FC",
+      "publisher": "ESPN",
+      "category": [
+        "Football"
+      ],
+      "tags": [],
+      "publishedAt": "2026-10-26 09:29"
+    },
+    {
+      "date": "2026-10-26",
+      "title": "FC Barcelona vs. SE Palmeiras | Messi Cup Highlights | ESPN on Disney+",
+      "link": "https://www.youtube.com/watch?v=4bcmQuVOJsM",
+      "type": "YouTube",
+      "source": "ESPN FC",
+      "publisher": "ESPN",
+      "category": [
+        "Football"
+      ],
+      "tags": [],
+      "publishedAt": "2026-10-26 07:49"
+    },
+    {
+      "date": "2026-10-26",
+      "title": "How Labor's losing the cost-of-living battle",
+      "link": "https://www.abc.net.au/listen/programs/abc-news-daily/how-labors-losing-the-costofliving-battle/107300406",
+      "type": "Podcast",
+      "source": "ABC News Daily",
+      "publisher": "ABC",
+      "category": [
+        "News"
+      ],
+      "tags": [],
+      "publishedAt": "2026-10-26 01:30"
+    }
+  ]
+}

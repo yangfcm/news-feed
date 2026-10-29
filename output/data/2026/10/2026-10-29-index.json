@@ -1,7 +1,6 @@
 {
   "date": "2026-10-29",
-  "updatedAt": "2026-10-29 20:19",
-  "coverage": 24,
+  "updatedAt": "2026-10-29 23:32",
   "entryCount": 12,
   "path": "2026/10/2026-10-29.json",
   "facets": {
@@ -35,6 +34,7 @@
       "data-privacy",
       "developer-skills",
       "england",
+      "etsy",
       "eu-ai-act",
       "fc-cincinnati",
       "harry-kane",
@@ -51,18 +51,39 @@
       "michael-carrick",
       "mikel-arteta",
       "mls",
+      "online-marketplaces",
       "orlando-city",
       "playoff-race",
       "red-card",
       "software-development",
+      "spirituality",
       "sponsorship",
       "steve-nicol",
       "tech-law",
       "tottenham",
+      "witchcraft",
       "youth-football"
     ]
   },
   "entries": [
+    {
+      "date": "2026-10-29",
+      "title": "Would you pay an online witch to fix your life? - What in the World podcast, BBC World Service",
+      "link": "https://www.youtube.com/watch?v=IBACBvEojUc",
+      "type": "YouTube",
+      "source": "BBC World Service",
+      "publisher": "BBC",
+      "category": [
+        "News"
+      ],
+      "tags": [
+        "witchcraft",
+        "online-marketplaces",
+        "spirituality",
+        "etsy"
+      ],
+      "publishedAt": "2026-10-29 23:30"
+    },
     {
       "date": "2026-10-29",
       "title": "AI Regulation and What Every Tech Company Should Know",
@@ -263,23 +284,6 @@
         "developer-skills"
       ],
       "publishedAt": "2026-10-29 00:30"
-    },
-    {
-      "date": "2026-10-29",
-      "title": "Manchester City vs. UE Cornellà | Messi Cup Highlights | ESPN on Disney+",
-      "link": "https://www.youtube.com/watch?v=Higx-9sfh2w",
-      "type": "YouTube",
-      "source": "ESPN FC",
-      "publisher": "ESPN",
-      "category": [
-        "Football"
-      ],
-      "tags": [
-        "messi-cup",
-        "manchester-city",
-        "youth-football"
-      ],
-      "publishedAt": "2026-10-28 21:36"
     }
   ]
 }

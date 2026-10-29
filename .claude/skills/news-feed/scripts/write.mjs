@@ -1,15 +1,17 @@
 #!/usr/bin/env node
-// Turn the enriched entries into the day's JSON, its Markdown note, its day index, and the
-// global index.
+// Turn the enriched entries into day files — each entry goes into the file of its own
+// publish date, so one run may write several — plus their Markdown notes, day indexes and
+// the global index.
 //
 //   node write.mjs <enriched.json> [--out output/data]
 //
-// Re-running on the same day upserts: an entry already in the day file is refreshed from
-// the new fetch, a new one is appended, and one the new fetch did not return is kept.
-// summary and tags are only replaced by non-empty values, so a run without them (no
-// Claude) never wipes out ones written earlier.
+// Writing upserts across every day file on disk: an entry already filed is refreshed from
+// the new fetch, a new one is added, and one the new fetch did not return is kept. An entry
+// sitting in the wrong day file is moved to its publish date. summary and tags are only
+// replaced by non-empty values, so a run without them (no Claude) never wipes out ones
+// written earlier.
 
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { localDate, localDateTime } from "./lib/text.mjs";
 import { PROJECT_ROOT } from "./lib/env.mjs";
@@ -74,6 +76,12 @@ function merge(previous, next) {
   };
 }
 
+/** The local date an entry belongs to: its publish date, or `fallback` when that is unusable. */
+function entryDate(entry, fallback) {
+  const published = String(entry.publishedAt || "");
+  return /^\d{4}-\d{2}-\d{2}/.test(published) ? published.slice(0, 10) : fallback;
+}
+
 const byPublishedDesc = (a, b) =>
   a.publishedAt < b.publishedAt ? 1 : a.publishedAt > b.publishedAt ? -1 : a.title < b.title ? -1 : 1;
 
@@ -82,7 +90,6 @@ function renderMarkdown(day) {
     "---",
     `Date: ${day.date}`,
     `Updated At: ${day.updatedAt}`,
-    `Coverage: ${day.coverage === null ? "unknown" : `${day.coverage} hours`}`,
     `Entries: ${day.entryCount}`,
     "---",
     "",
@@ -126,8 +133,41 @@ function writeFile(path, contents) {
   writeFileSync(path, contents);
 }
 
+const serialise = (value) => `${JSON.stringify(value, null, 2)}\n`;
+
 /** Day files are named <YYYY-MM-DD>.json; this excludes index.json and <YYYY-MM-DD>-index.json. */
 const DAY_FILE = /^\d{4}-\d{2}-\d{2}\.json$/;
+
+const dayPath = (outDir, date) => join(outDir, ...date.split("-").slice(0, 2), `${date}.json`);
+
+/** Every readable day file under outDir, with its path and its text as it is on disk. */
+function readDayFiles(outDir, { warn = true } = {}) {
+  const days = [];
+  if (!existsSync(outDir)) return days;
+  for (const dirent of readdirSync(outDir, { recursive: true, withFileTypes: true })) {
+    if (!dirent.isFile() || !DAY_FILE.test(dirent.name)) continue;
+    const path = join(dirent.parentPath ?? dirent.path, dirent.name);
+    let text;
+    let day;
+    try {
+      text = readFileSync(path, "utf8");
+      day = JSON.parse(text);
+    } catch {
+      if (warn) console.error(`warning: skipping unreadable ${path}`);
+      continue;
+    }
+    if (!day?.date || !Array.isArray(day.entries)) continue;
+    days.push({ ...day, path, text });
+  }
+  return days;
+}
+
+/** A day file, its Markdown note and its day index. */
+function removeDay(jsonPath) {
+  for (const path of [jsonPath, jsonPath.replace(/\.json$/, ".md"), jsonPath.replace(/\.json$/, "-index.json")]) {
+    rmSync(path, { force: true });
+  }
+}
 
 /** The lightweight, summary-free record an index keeps for one entry. */
 function indexRecord(date, entry) {
@@ -162,41 +202,27 @@ function rebuildIndexes(outDir) {
   const dates = [];
   const relative = (path) => path.slice(outDir.length + 1).split("\\").join("/");
 
-  if (existsSync(outDir)) {
-    for (const dirent of readdirSync(outDir, { recursive: true, withFileTypes: true })) {
-      if (!dirent.isFile() || !DAY_FILE.test(dirent.name)) continue;
-      const full = join(dirent.parentPath ?? dirent.path, dirent.name);
-      let day;
-      try {
-        day = readJson(full);
-      } catch {
-        console.error(`warning: skipping unreadable ${full}`);
-        continue;
-      }
-      if (!day?.date || !Array.isArray(day.entries)) continue;
+  // Re-read rather than reuse what main() loaded, so the indexes match the disk exactly.
+  for (const day of readDayFiles(outDir, { warn: false })) {
+    const records = day.entries.map((entry) => indexRecord(day.date, entry)).sort(byPublishedDesc);
+    const dayIndexPath = day.path.replace(/\.json$/, "-index.json");
+    const dayIndex = {
+      date: day.date,
+      updatedAt: day.updatedAt ?? "",
+      entryCount: records.length,
+      path: relative(day.path),
+      facets: collectFacets(records),
+      entries: records,
+    };
+    writeFile(dayIndexPath, serialise(dayIndex));
 
-      const records = day.entries.map((entry) => indexRecord(day.date, entry)).sort(byPublishedDesc);
-      const dayIndexPath = full.replace(/\.json$/, "-index.json");
-      const dayIndex = {
-        date: day.date,
-        updatedAt: day.updatedAt ?? "",
-        coverage: day.coverage ?? null,
-        entryCount: records.length,
-        path: relative(full),
-        facets: collectFacets(records),
-        entries: records,
-      };
-      writeFile(dayIndexPath, `${JSON.stringify(dayIndex, null, 2)}\n`);
-
-      dates.push({
-        date: day.date,
-        coverage: day.coverage ?? null,
-        entryCount: records.length,
-        path: relative(full),
-        indexPath: relative(dayIndexPath),
-      });
-      entries.push(...records);
-    }
+    dates.push({
+      date: day.date,
+      entryCount: records.length,
+      path: relative(day.path),
+      indexPath: relative(dayIndexPath),
+    });
+    entries.push(...records);
   }
 
   dates.sort((a, b) => (a.date < b.date ? 1 : -1));
@@ -228,70 +254,112 @@ function main() {
   if (missingSummary) console.error(`warning: ${missingSummary} of ${incoming.length} entries have no summary`);
 
   const now = new Date();
-  const date = localDate(now);
-  const [year, month] = date.split("-");
-  const jsonPath = join(outDir, year, month, `${date}.json`);
-  const mdPath = join(outDir, year, month, `${date}.md`);
-  const dayIndexPath = join(outDir, year, month, `${date}-index.json`);
+  // The date this run is for: the --date fetched, else today. Its file is always written
+  // and is the one that records the fetch errors.
+  const runDate = input.targetDate || localDate(now);
+  const existingDays = readDayFiles(outDir);
 
-  let existing = [];
-  let previousCoverage = null;
-  if (existsSync(jsonPath)) {
-    try {
-      const previous = readJson(jsonPath);
-      existing = previous.entries || [];
-      previousCoverage = previous.coverage ?? null;
-    } catch {
-      console.error(`warning: ${jsonPath} was unreadable and will be replaced`);
+  // Every entry already on disk, across all days, keyed by identity. `from` is the date of
+  // the file it was read from (null for a new entry).
+  const pool = new Map();
+  for (const day of existingDays) {
+    for (const raw of day.entries) {
+      const held = { entry: shape(raw), from: day.date };
+      const key = entryKey(held.entry);
+      const other = pool.get(key);
+      if (!other) {
+        pool.set(key, held);
+        continue;
+      }
+      // The same item in two day files: keep the copy filed under its own publish date.
+      const [keep, drop] = entryDate(held.entry, held.from) === held.from ? [held, other] : [other, held];
+      pool.set(key, { ...keep, entry: merge(drop.entry, keep.entry) });
     }
   }
 
-  const byKey = new Map(existing.map((entry) => [entryKey(entry), shape(entry)]));
+  const stats = new Map();
+  const statsFor = (date) => stats.get(date) ?? stats.set(date, { added: 0, updated: 0 }).get(date);
   const seenThisRun = new Set();
-  let added = 0;
-  let updated = 0;
-  for (const entry of incoming) {
+  for (const raw of incoming) {
+    const entry = shape(raw);
     const key = entryKey(entry);
     // The same item from two sources counts once; the first one wins.
     if (seenThisRun.has(key)) continue;
     seenThisRun.add(key);
-    const previous = byKey.get(key);
-    if (previous) {
-      byKey.set(key, merge(previous, shape(entry)));
-      updated += 1;
+    const held = pool.get(key);
+    if (held) {
+      pool.set(key, { entry: merge(held.entry, entry), from: held.from });
+      statsFor(entryDate(entry, held.from)).updated += 1;
     } else {
-      byKey.set(key, shape(entry));
-      added += 1;
+      pool.set(key, { entry, from: null });
+      statsFor(entryDate(entry, runDate)).added += 1;
     }
   }
-  const entries = [...byKey.values()].sort(byPublishedDesc);
 
-  const day = {
-    date,
-    updatedAt: localDateTime(now),
-    // The hours window of the latest run that wrote this day.
-    coverage: typeof input.windowHours === "number" ? input.windowHours : previousCoverage,
-    entryCount: entries.length,
-    entries,
-    errors: input.errors || [],
-  };
+  const buckets = new Map();
+  let moved = 0;
+  for (const { entry, from } of pool.values()) {
+    const date = entryDate(entry, from ?? runDate);
+    if (from && from !== date) moved += 1;
+    if (!buckets.has(date)) buckets.set(date, []);
+    buckets.get(date).push(entry);
+  }
 
-  writeFile(jsonPath, `${JSON.stringify(day, null, 2)}\n`);
-  writeFile(mdPath, renderMarkdown(day));
+  const existingByDate = new Map(existingDays.map((day) => [day.date, day]));
+  const allDates = [...new Set([runDate, ...buckets.keys(), ...existingByDate.keys()])].sort().reverse();
+  const written = [];
+  const removed = [];
+  for (const date of allDates) {
+    const entries = (buckets.get(date) ?? []).sort(byPublishedDesc);
+    const previous = existingByDate.get(date);
+    const isRunDate = date === runDate;
+
+    // Every entry moved out to its publish date: the file has nothing left to hold.
+    if (!entries.length && !isRunDate && previous?.entries.length) {
+      removeDay(previous.path);
+      removed.push(previous.path);
+      continue;
+    }
+
+    const day = {
+      date,
+      updatedAt: previous?.updatedAt ?? "",
+      entryCount: entries.length,
+      entries,
+      // Fetch errors describe the run, so only the run date's file records them.
+      errors: isRunDate ? input.errors || [] : previous?.errors ?? [],
+    };
+    // The run date's file is always written; any other only when its content changed.
+    if (!isRunDate && previous && serialise(day) === previous.text) continue;
+    day.updatedAt = localDateTime(now);
+
+    const jsonPath = previous?.path ?? dayPath(outDir, date);
+    const mdPath = jsonPath.replace(/\.json$/, ".md");
+    writeFile(jsonPath, serialise(day));
+    writeFile(mdPath, renderMarkdown(day));
+    written.push({
+      date,
+      json: jsonPath,
+      markdown: mdPath,
+      dayIndex: jsonPath.replace(/\.json$/, "-index.json"),
+      ...(stats.get(date) ?? { added: 0, updated: 0 }),
+      entryCount: day.entryCount,
+    });
+  }
 
   const indexPath = join(outDir, "index.json");
   const index = rebuildIndexes(outDir);
-  writeFile(indexPath, `${JSON.stringify(index, null, 2)}\n`);
+  writeFile(indexPath, serialise(index));
 
+  const total = (field) => [...stats.values()].reduce((sum, s) => sum + s[field], 0);
   const summary = {
-    json: jsonPath,
-    markdown: mdPath,
-    dayIndex: dayIndexPath,
+    days: written,
+    removed,
+    moved,
     index: indexPath,
-    added,
-    updated,
+    added: total("added"),
+    updated: total("updated"),
     skippedAsDuplicate: incoming.length - seenThisRun.size,
-    entryCount: day.entryCount,
     indexedDays: index.dateCount,
     indexedEntries: index.entryCount,
   };

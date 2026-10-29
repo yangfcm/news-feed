@@ -26,7 +26,7 @@ export function DateCalendar({ dates, selected }: { dates: string[]; selected?: 
       today={browserToday ? parseDateString(browserToday) : new Date(0)}
       disabled={(date) => !available.has(toDateString(date))}
       modifiers={{ hasContent }}
-      modifiersClassNames={{ hasContent: "font-semibold [&_button]:font-semibold" }}
+      modifiersClassNames={{ hasContent: "font-semibold [&_button]:font-semibold [&_button]:cursor-pointer" }}
       onSelect={(date) => router.push(`/${toDateString(date)}/`)}
       className="w-full rounded-lg border [--cell-size:--spacing(9)]"
       classNames={{ root: "w-full" }}

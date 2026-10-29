@@ -3,9 +3,12 @@
 import { fetchJson, fetchText } from "./http.mjs";
 
 const API = "https://www.googleapis.com/youtube/v3";
-// playlistItems.list costs one quota unit regardless of maxResults, so ask for the maximum:
-// a 48-hour window on a busy channel can easily exceed 10 uploads once Shorts are filtered out.
+// playlistItems.list costs one quota unit per page regardless of maxResults, so ask for the
+// maximum: a 96-hour window on a busy channel can easily exceed 10 uploads.
 const MAX_RESULTS = 50;
+// Paging back to an older --date stops here: 500 uploads, 10 quota units per channel.
+// Whatever is older than that is simply not collected.
+const MAX_PAGES = 10;
 const THUMB_ORDER = ["maxres", "standard", "high", "medium", "default"];
 
 export function apiKey() {
@@ -33,18 +36,32 @@ export function uploadsPlaylistId(channelId) {
   return channelId.startsWith("UC") ? `UU${channelId.slice(2)}` : channelId;
 }
 
-/** Video ids of a channel's most recent uploads, newest first. */
-export async function listUploads(playlistId, key) {
-  const url = `${API}/playlistItems?${new URLSearchParams({
-    key,
-    playlistId,
-    part: "snippet",
-    maxResults: String(MAX_RESULTS),
-  })}`;
-  const data = await fetchJson(url);
-  return (data.items || [])
-    .map((item) => item?.snippet?.resourceId?.videoId)
-    .filter((id) => typeof id === "string" && id);
+/**
+ * Ids of a channel's uploads published in window [from, to), newest first. Pages back until
+ * it passes `from`; `truncated` is true when MAX_PAGES ran out first. contentDetails carries
+ * the video's own publish time, which is close enough to page by; fetch.mjs still filters on
+ * the time videos.list reports.
+ */
+export async function listUploads(playlistId, key, { from, to }) {
+  const ids = [];
+  let pageToken = "";
+  for (let page = 0; page < MAX_PAGES; page += 1) {
+    const params = { key, playlistId, part: "contentDetails", maxResults: String(MAX_RESULTS) };
+    if (pageToken) params.pageToken = pageToken;
+    const data = await fetchJson(`${API}/playlistItems?${new URLSearchParams(params)}`);
+    const items = data.items || [];
+    for (const item of items) {
+      const id = item?.contentDetails?.videoId;
+      if (typeof id !== "string" || !id) continue;
+      const published = Date.parse(item.contentDetails.videoPublishedAt ?? "");
+      // No publish time (private or upcoming): keep it and let videos.list decide.
+      if (Number.isNaN(published) || (published >= from && published < to)) ids.push(id);
+    }
+    pageToken = data.nextPageToken;
+    const oldest = Date.parse(items.at(-1)?.contentDetails?.videoPublishedAt ?? "");
+    if (!pageToken || !(oldest >= from)) return { ids, truncated: false };
+  }
+  return { ids, truncated: true };
 }
 
 /**

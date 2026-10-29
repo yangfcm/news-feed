@@ -13,12 +13,12 @@ Each run collects everything your sources published in the last 24 hours and pub
    YouTube Shorts (3 minutes or less) and videos that can't be watched in your country are dropped.
 
 2. **Summarise.** Claude writes a summary in Chinese and a few English tags for every item.
-3. **Write.** The day's digest is saved under `output/data/<Year>/<Month>/`:
+3. **Write.** Each item is filed under the day it was published, so one run usually writes both yesterday's and today's digest, under `output/data/<Year>/<Month>/`:
    - `<date>.json` holds the full data;
    - `<date>.md` is a readable Markdown note;
    - `<date>-index.json` is the day's index.
 
-   A global `output/data/index.json` covers every day. Running again on the same day updates the items already there and adds the new ones. Summaries and tags already written are kept unless new ones are written.
+   A global `output/data/index.json` covers every day. Running again updates the items already filed and adds the new ones to their day. Summaries and tags already written are kept unless new ones are written.
 
 4. **Publish.** The website in [`web/`](web) is a static [Next.js](https://nextjs.org) site built with [shadcn/ui](https://ui.shadcn.com):
    - the home page shows today's digest, and every past day has its own page;
@@ -89,15 +89,16 @@ In Claude Code, from the project root, run the skill:
 /news-feed
 ```
 
-Pass a number of hours, from 1 to 48, to change the window: `/news-feed 12`. The skill fetches, summarises, writes the files under `output/data/`, builds the site, and reports what it collected and any sources that failed.
+Pass a number of hours, from 1 to 96, to change the window: `/news-feed 12`. Or pass a date — `2026-10-27`, `2026/10/27` or `20261027` — to collect what was published on that day: `/news-feed 2026-10-27`. An invalid date, or one after today, falls back to the last 24 hours. Feeds only keep their recent items, so an older date may come back incomplete. The skill fetches, summarises, writes the files under `output/data/`, builds the site, and reports what it collected and any sources that failed.
 
 ### Without Claude
 
 The digest can be made with the scripts alone. Items then have no summary or tags; the Markdown note and the website simply leave those out.
 
 ```bash
-npm run digest                  # fetch and write today's digest into output/data/
-npm run digest -- --hours 12    # a different window, from 1 to 48 hours
+npm run digest                  # fetch and write the digest into output/data/
+npm run digest -- --hours 12    # a different window, from 1 to 96 hours
+npm run digest -- --date 2026-10-27   # one day; also 2026/10/27 or 20261027
 npm run build                   # rebuild the website with it
 ```
 
@@ -118,7 +119,7 @@ Run these from the project root. The root [`package.json`](package.json) only ho
 | Command           | What it does                                                                                                                                                                                                                                                                                                                                        |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `npm run setup`   | Installs the dependencies of the skill scripts (`.claude/skills/news-feed/scripts/`) and does a clean install of the website (`web/`) from its lockfile. Run it after cloning, or when a lockfile changes.                                                                                                                                          |
-| `npm run digest`  | Makes today's digest without Claude: fetches what the sources in `input/source.json` published in the last 24 hours, then writes the day's JSON, Markdown note and indexes into `output/data/`, with no summaries or tags. Items already in today's file are updated and new ones added; summaries written earlier are kept. Pass `--hours` (1 to 48) for a different window, e.g. `npm run digest -- --hours 12`, or `--out <dir>` to try a run without touching `output/data/`. Run `npm run build` afterwards to update the website. |
+| `npm run digest`  | Makes the digest without Claude: fetches what the sources in `input/source.json` published in the last 24 hours, then writes each item into the JSON and Markdown note of the day it was published, and the indexes, into `output/data/`, with no summaries or tags. Items already filed are updated and new ones added; summaries written earlier are kept. Pass `--hours` (1 to 96) for a different window, e.g. `npm run digest -- --hours 12`, `--date` for one day, e.g. `npm run digest -- --date 2026-10-27`, or `--out <dir>` to try a run without touching `output/data/`. Run `npm run build` afterwards to update the website. |
 | `npm run dev`     | Starts the website's development server at http://localhost:3000. Pages read `output/data/` on every request, so new data shows up on refresh.                                                                                                                                                                                                      |
 | `npm run build`   | Builds the static website into `web/out/`: `index.html` for today, plus one `<date>/index.html` per day in the index. Rebuild after new data is written. The skill does this as its last step.                                                                                                                                                      |
 | `npm run preview` | Serves the built `web/out/` locally, to check the production build before deploying.                                                                                                                                                                                                                                                                |

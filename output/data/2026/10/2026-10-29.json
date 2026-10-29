@@ -1,9 +1,30 @@
 {
   "date": "2026-10-29",
-  "updatedAt": "2026-10-29 20:19",
-  "coverage": 24,
+  "updatedAt": "2026-10-29 23:32",
   "entryCount": 12,
   "entries": [
+    {
+      "title": "Would you pay an online witch to fix your life? - What in the World podcast, BBC World Service",
+      "source": "BBC World Service",
+      "type": "YouTube",
+      "publisher": "BBC",
+      "publishedAt": "2026-10-29 23:30",
+      "link": "https://www.youtube.com/watch?v=IBACBvEojUc",
+      "thumbnail": "https://i.ytimg.com/vi/IBACBvEojUc/maxresdefault.jpg",
+      "category": [
+        "News"
+      ],
+      "summary": "eBay、Etsy 等平台上有大量“网络女巫”出售咒语，声称能帮人解决从爱情、金钱到考试、升职、天气等各种问题。节目走访了 The Divine Eyes 店铺的 Morgan，了解她如何施法以及如何回应质疑者，并采访了购买过网络咒语的顾客。内容创作者 Stephanie Martinez 谈及灵性与巫术，节目还探讨了巫术产业的规模、平台对出售咒语的规定，以及巫术在网上日益流行的原因。最后，William Lee Adams 介绍了世界各地围绕巫术的禁忌，以及 Brujería 等文化传统被商业化的问题。",
+      "tags": [
+        "witchcraft",
+        "online-marketplaces",
+        "spirituality",
+        "etsy"
+      ],
+      "audioLink": null,
+      "videoId": "IBACBvEojUc",
+      "duration": 834
+    },
     {
       "title": "AI Regulation and What Every Tech Company Should Know",
       "source": "Software Engineering Daily",
@@ -248,27 +269,6 @@
       "audioLink": null,
       "videoId": "I6V5dmoZplU",
       "duration": 1058
-    },
-    {
-      "title": "Manchester City vs. UE Cornellà | Messi Cup Highlights | ESPN on Disney+",
-      "source": "ESPN FC",
-      "type": "YouTube",
-      "publisher": "ESPN",
-      "publishedAt": "2026-10-28 21:36",
-      "link": "https://www.youtube.com/watch?v=Higx-9sfh2w",
-      "thumbnail": "https://i.ytimg.com/vi/Higx-9sfh2w/maxresdefault.jpg",
-      "category": [
-        "Football"
-      ],
-      "summary": "2026 梅西杯 D 组比赛集锦，曼城 U16 对阵 UE Cornellà U16。梅西杯是与梅西合作创办的全球青少年足球赛事平台，汇集各国顶级 U16 球队进行为期一周的比赛与文化交流。",
-      "tags": [
-        "messi-cup",
-        "manchester-city",
-        "youth-football"
-      ],
-      "audioLink": null,
-      "videoId": "Higx-9sfh2w",
-      "duration": 591
     }
   ],
   "errors": []

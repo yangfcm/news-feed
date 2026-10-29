@@ -27,8 +27,6 @@ export type FetchError = {
 export type Day = {
   date: string;
   updatedAt: string;
-  /** Hours of the latest run's window. Missing in day files written before it existed. */
-  coverage?: number | null;
   entryCount: number;
   entries: Entry[];
   errors: FetchError[];
@@ -36,7 +34,6 @@ export type Day = {
 
 export type IndexDate = {
   date: string;
-  coverage?: number | null;
   entryCount: number;
   /** Relative to output/data/. */
   path: string;

@@ -3,10 +3,11 @@
 // without Claude. The skill does not use this; it runs fetch.mjs and write.mjs itself so it
 // can write the summaries in between.
 //
-//   node digest.mjs <source.json> [--hours 24] [--out output/data]
+//   node digest.mjs <source.json> [--hours 24 | --date YYYY-MM-DD] [--out output/data]
 //
-// --out goes to write.mjs; every other argument is passed on to fetch.mjs. The day file is
-// upserted as usual, so summaries written by an earlier Claude run on the same day are kept.
+// --out goes to write.mjs; every other argument is passed on to fetch.mjs. Each entry is
+// upserted into the day file of its publish date as usual, so summaries written by an
+// earlier Claude run are kept.
 
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
