@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-10-29 23:58",
-  "dateCount": 6,
-  "entryCount": 54,
+  "updatedAt": "2026-10-30 00:01",
+  "dateCount": 7,
+  "entryCount": 68,
   "dates": [
     {
       "date": "2026-10-29",
@@ -14,6 +14,12 @@
       "entryCount": 1,
       "path": "2026/10/2026-10-28.json",
       "indexPath": "2026/10/2026-10-28-index.json"
+    },
+    {
+      "date": "2026-10-27",
+      "entryCount": 14,
+      "path": "2026/10/2026-10-27.json",
+      "indexPath": "2026/10/2026-10-27-index.json"
     },
     {
       "date": "2026-10-26",
@@ -51,11 +57,13 @@
       "History",
       "Knowledge",
       "News",
+      "Science",
       "Tech"
     ],
     "sources": [
       "ABC News Daily",
       "ABC Rear Vision",
+      "BBC Discovery",
       "BBC World Service",
       "ESPN FC",
       "Maximilian Schwarzmueller",
@@ -345,6 +353,188 @@
         "youth-football"
       ],
       "publishedAt": "2026-10-28 21:36"
+    },
+    {
+      "date": "2026-10-27",
+      "title": "Managing AI Coding Costs at Scale",
+      "link": "https://softwareengineeringdaily.com/podcasts/managing-ai-coding-costs-at-scale/",
+      "type": "Podcast",
+      "source": "Software Engineering Daily",
+      "publisher": "Software Engineering Daily",
+      "category": [
+        "Tech"
+      ],
+      "tags": [],
+      "publishedAt": "2026-10-27 19:30"
+    },
+    {
+      "date": "2026-10-27",
+      "title": "Elevators, toasters, and the birth of Java",
+      "link": "gid://art19-episode-locator/V0/gjan38g4XbBh2ku6RozX6xCCeWyhNSiw_rl4An1bwH0",
+      "type": "Podcast",
+      "source": "The Stack Overflow",
+      "publisher": "The Stack Overflow",
+      "category": [
+        "Tech"
+      ],
+      "tags": [],
+      "publishedAt": "2026-10-27 14:30"
+    },
+    {
+      "date": "2026-10-27",
+      "title": "Jose Mourinho ‘COMPLETELY VALIDATED’ with El Clasico win | ESPN FC",
+      "link": "https://www.youtube.com/watch?v=YkuEKejr9pg",
+      "type": "YouTube",
+      "source": "ESPN FC",
+      "publisher": "ESPN",
+      "category": [
+        "Football"
+      ],
+      "tags": [],
+      "publishedAt": "2026-10-27 11:28"
+    },
+    {
+      "date": "2026-10-27",
+      "title": "Trapped under Houthi siege in Yemen’s city of snipers - BBC World Service Documentaries",
+      "link": "https://www.youtube.com/watch?v=y7tZo76Kw3M",
+      "type": "YouTube",
+      "source": "BBC World Service",
+      "publisher": "BBC",
+      "category": [
+        "News"
+      ],
+      "tags": [],
+      "publishedAt": "2026-10-27 10:30"
+    },
+    {
+      "date": "2026-10-27",
+      "title": "Will Man United sack Michael Carrick? + El Clasico takeaways & Kane wins the Ballon d’Or | ESPN FC",
+      "link": "https://www.youtube.com/watch?v=Yny3v2XgpbM",
+      "type": "YouTube",
+      "source": "ESPN FC",
+      "publisher": "ESPN",
+      "category": [
+        "Football"
+      ],
+      "tags": [],
+      "publishedAt": "2026-10-27 10:23"
+    },
+    {
+      "date": "2026-10-27",
+      "title": "Could Man City & Man United BOTH get relegated this season? 😳 | ESPN FC Extra Time",
+      "link": "https://www.youtube.com/watch?v=WjbYWAnfqSs",
+      "type": "YouTube",
+      "source": "ESPN FC",
+      "publisher": "ESPN",
+      "category": [
+        "Football"
+      ],
+      "tags": [],
+      "publishedAt": "2026-10-27 10:09"
+    },
+    {
+      "date": "2026-10-27",
+      "title": "REACTION to Harry Kane winning his first Ballon d’Or 🔥 | ESPN FC",
+      "link": "https://www.youtube.com/watch?v=kX5K-eI4-PU",
+      "type": "YouTube",
+      "source": "ESPN FC",
+      "publisher": "ESPN",
+      "category": [
+        "Football"
+      ],
+      "tags": [],
+      "publishedAt": "2026-10-27 09:36"
+    },
+    {
+      "date": "2026-10-27",
+      "title": "Mourinho got ‘EVERYTHING SPOT ON’ ⭐️ Can Real Madrid end Barcelona’s LALIGA dominance? | ESPN FC",
+      "link": "https://www.youtube.com/watch?v=N8dE3hXlEXA",
+      "type": "YouTube",
+      "source": "ESPN FC",
+      "publisher": "ESPN",
+      "category": [
+        "Football"
+      ],
+      "tags": [],
+      "publishedAt": "2026-10-27 09:32"
+    },
+    {
+      "date": "2026-10-27",
+      "title": "Biggest takeaways from Spurs’ ‘impressive’ win over Chelsea + Liverpool trending up? | ESPN FC",
+      "link": "https://www.youtube.com/watch?v=Z79_bgedXRM",
+      "type": "YouTube",
+      "source": "ESPN FC",
+      "publisher": "ESPN",
+      "category": [
+        "Football"
+      ],
+      "tags": [],
+      "publishedAt": "2026-10-27 09:17"
+    },
+    {
+      "date": "2026-10-27",
+      "title": "Man United are ‘IN THE RELEGATION BATTLE’ 😳 Who should the next manager be? | ESPN FC",
+      "link": "https://www.youtube.com/watch?v=D46bwHjBAf0",
+      "type": "YouTube",
+      "source": "ESPN FC",
+      "publisher": "ESPN",
+      "category": [
+        "Football"
+      ],
+      "tags": [],
+      "publishedAt": "2026-10-27 09:06"
+    },
+    {
+      "date": "2026-10-27",
+      "title": "The Life Scientific: Gillian Forrester",
+      "link": "http://www.bbc.co.uk/programmes/w3ct8jt8",
+      "type": "Podcast",
+      "source": "BBC Discovery",
+      "publisher": "BBC",
+      "category": [
+        "Science"
+      ],
+      "tags": [],
+      "publishedAt": "2026-10-27 07:30"
+    },
+    {
+      "date": "2026-10-27",
+      "title": "How student protesters won against Serbia's Vučić  - BBC World Service",
+      "link": "https://www.youtube.com/watch?v=9ACou8Ii-Bo",
+      "type": "YouTube",
+      "source": "BBC World Service",
+      "publisher": "BBC",
+      "category": [
+        "News"
+      ],
+      "tags": [],
+      "publishedAt": "2026-10-27 02:52"
+    },
+    {
+      "date": "2026-10-27",
+      "title": "What 'Woke 2.0' means for the midterms",
+      "link": "https://www.abc.net.au/listen/programs/abc-news-daily/what-woke-2-0-means-for-the-midterms/107310158",
+      "type": "Podcast",
+      "source": "ABC News Daily",
+      "publisher": "ABC",
+      "category": [
+        "News"
+      ],
+      "tags": [],
+      "publishedAt": "2026-10-27 01:30"
+    },
+    {
+      "date": "2026-10-27",
+      "title": "ABSOLUTE CHAOS! 👀 FINAL MINUTES of El Trafico | MLS Highlights | ESPN FC",
+      "link": "https://www.youtube.com/watch?v=QjEyIpftbz0",
+      "type": "YouTube",
+      "source": "ESPN FC",
+      "publisher": "ESPN",
+      "category": [
+        "Football"
+      ],
+      "tags": [],
+      "publishedAt": "2026-10-27 01:16"
     },
     {
       "date": "2026-10-26",
