@@ -6,8 +6,13 @@ import { useBrowserToday } from "@/hooks/use-browser-today";
 import { Calendar } from "@/components/ui/calendar";
 import { parseDateString, toDateString } from "@/lib/format";
 
-/** Only dates that have a digest can be picked; picking one opens its page. */
-export function DateCalendar({ dates, selected }: { dates: string[]; selected?: string }) {
+export function DateCalendar({
+  dates,
+  selected,
+}: {
+  dates: string[];
+  selected?: string;
+}) {
   const router = useRouter();
   const browserToday = useBrowserToday();
   const available = new Set(dates);
@@ -18,15 +23,17 @@ export function DateCalendar({ dates, selected }: { dates: string[]; selected?: 
     <Calendar
       mode="single"
       required
-      // A fixed locale, so dates format the same at build time and in the browser.
       locale={enUS}
+      showOutsideDays={false}
       selected={selected ? parseDateString(selected) : undefined}
       defaultMonth={initial ? parseDateString(initial) : undefined}
-      // Leave "today" unmarked until hydrated, so the prerendered HTML still matches.
       today={browserToday ? parseDateString(browserToday) : new Date(0)}
       disabled={(date) => !available.has(toDateString(date))}
       modifiers={{ hasContent }}
-      modifiersClassNames={{ hasContent: "font-semibold [&_button]:font-semibold [&_button]:cursor-pointer" }}
+      modifiersClassNames={{
+        hasContent:
+          "font-semibold [&_button]:font-semibold [&_button]:cursor-pointer",
+      }}
       onSelect={(date) => router.push(`/${toDateString(date)}/`)}
       className="w-full rounded-lg border [--cell-size:--spacing(9)]"
       classNames={{ root: "w-full" }}
