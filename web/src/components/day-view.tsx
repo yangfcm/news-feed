@@ -1,6 +1,6 @@
 import { DayHeading } from "@/components/day-heading";
 import { EntryCard } from "@/components/entry-card";
-import { FilteredEntry, FilterStatus } from "@/components/entry-filters";
+import { EntryCount, FilteredEntry } from "@/components/entry-filters";
 import { entryKey } from "@/lib/filters";
 import type { Day } from "@/lib/types";
 
@@ -8,11 +8,10 @@ import type { Day } from "@/lib/types";
 export function DayView({ day }: { day: Day }) {
   return (
     <>
-      <DayHeading date={day.date} badge={`${day.entryCount} ${day.entryCount === 1 ? "entry" : "entries"}`}>
+      <DayHeading date={day.date} badge={<EntryCount />}>
         Updated At {day.updatedAt}
       </DayHeading>
       <div className="flex flex-col gap-6">
-        <FilterStatus />
         {day.entries.length ? (
           // The first cards are above the fold on any viewport, so their images load eagerly.
           day.entries.map((entry, i) => (

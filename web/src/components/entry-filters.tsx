@@ -59,19 +59,10 @@ export function FilteredEntry({ id, children }: { id: string; children: React.Re
   return <div hidden={!useFilters().visible.has(id)}>{children}</div>;
 }
 
-/** How many entries the filters leave, with a way to reset them. Nothing while unfiltered. */
-export function FilterStatus() {
-  const { items, active, visible, clear } = useFilters();
-  if (!active) return null;
-
-  return (
-    <p className="flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
-      {visible.size ? `Showing ${visible.size} of ${items.length} entries.` : "No entries match the selected filters."}
-      <Button variant="link" size="sm" onClick={clear} className="h-auto cursor-pointer p-0">
-        Clear filters
-      </Button>
-    </p>
-  );
+export function EntryCount() {
+  const { items, active, visible } = useFilters();
+  const total = `${items.length} ${items.length === 1 ? "entry" : "entries"}`;
+  return active ? `${visible.size} of ${total}` : total;
 }
 
 /** The sidebar panel: every type, category and source on the page, each a toggle. */
