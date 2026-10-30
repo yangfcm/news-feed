@@ -4,7 +4,7 @@ export type Entry = {
   title: string;
   source: string;
   type: string;
-  publisher: string;
+  sourceLink: string;
   publishedAt: string;
   link: string;
   thumbnail: string;

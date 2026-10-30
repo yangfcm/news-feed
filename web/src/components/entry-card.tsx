@@ -21,7 +21,21 @@ export function EntryCard({ entry, eager = false }: { entry: Entry; eager?: bool
   const loading = eager ? "eager" : "lazy";
   const fields = (
     <dl className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 text-sm">
-      <Field label="Source">{entry.source}</Field>
+      <Field label="Source">
+        {entry.source}
+        {entry.sourceLink ? (
+          <a
+            href={entry.sourceLink}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Open source in new window"
+            title="Open source in new window"
+            className="ml-1 inline-flex h-[1lh] items-center align-top text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ExternalLinkIcon className="size-3.5" />
+          </a>
+        ) : null}
+      </Field>
       <Field label="Published">{entry.publishedAt}</Field>
       {entry.duration ? <Field label="Duration">{formatDuration(entry.duration)}</Field> : null}
       {entry.category.length ? (

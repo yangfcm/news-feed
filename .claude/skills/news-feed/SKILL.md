@@ -21,7 +21,7 @@ The work splits in two: the scripts do all fetching, merging and rendering; you 
 
 ## source.json changes between runs
 
-`input/source.json` is hand-edited at any time: items are added and removed, and so are types, categories and publishers. On every run, treat the file as it is now.
+`input/source.json` is hand-edited at any time: items are added and removed, and so are types, categories and source links. On every run, treat the file as it is now.
 
 - Never reuse a source list from memory or from an earlier digest. Step 1 re-reads the file in full.
 - `type` is currently `Podcast`, `YouTube` or `Blog`, but a new value may appear at any time. The script reads an unknown type's `link` as an RSS/Atom feed and warns on stderr. Pass that warning on in your report so the user knows the type was not specially handled.
@@ -104,7 +104,7 @@ Each entry goes into the files of its publish date — the local date at the sta
       "title": "...",
       "source": "BBC World Service",
       "type": "YouTube",
-      "publisher": "BBC",
+      "sourceLink": "https://www.youtube.com/@BBCWorldService",
       "publishedAt": "2026-10-20 05:25",
       "link": "https://www.youtube.com/watch?v=cRH7CRf4C9c",
       "thumbnail": "https://...",
@@ -120,9 +120,9 @@ Each entry goes into the files of its publish date — the local date at the sta
 }
 ```
 
-`updatedAt` is when this file was last written. `errors` lists the sources that could not be fetched, and only the run date's file gets them from this run: any other day's file keeps the `errors` it already had, or `[]` when this run creates it. `duration` is **whole seconds** (`null` when unknown). `audioLink` and `videoId` are `null` when they do not apply.
+`updatedAt` is when this file was last written. `errors` lists the sources that could not be fetched, and only the run date's file gets them from this run: any other day's file keeps the `errors` it already had, or `[]` when this run creates it. `sourceLink` is the source's own page, copied from its `sourceLink` in `source.json` (`""` when it has none). `duration` is **whole seconds** (`null` when unknown). `audioLink` and `videoId` are `null` when they do not apply.
 
-**`<Year>/<Month>/<YYYY-MM-DD>.md`** — the same entries as a note: frontmatter (`Date`, `Updated At`, `Entries`), an H1 of the date, one `##` section per entry with its thumbnail, the `Source` / `Published` / `Link` / `Category` / `Tags` / `Summary` fields, and a bold `⚠️ **Fetch issues**` block last. `Tags` and `Summary` are left out of an entry that has none, which happens when the digest is made without Claude (`npm run digest`); the website hides them the same way.
+**`<Year>/<Month>/<YYYY-MM-DD>.md`** — the same entries as a note: frontmatter (`Date`, `Updated At`, `Entries`), an H1 of the date, one `##` section per entry with its thumbnail, the `Source` / `Source Link` / `Published` / `Link` / `Category` / `Tags` / `Summary` fields, and a bold `⚠️ **Fetch issues**` block last. `Source Link` is left out when the source has none. `Tags` and `Summary` are left out of an entry that has none, which happens when the digest is made without Claude (`npm run digest`); the website hides them the same way.
 
 **`index.json`** — the list of dates that have a day file, newest first, which the website builds its calendar and pages from:
 

@@ -72,12 +72,13 @@ netlify.toml                    Netlify build settings
      "link": "https://www.abc.net.au/feeds/9443166/podcast.xml",
      "type": "Podcast",
      "category": ["News"],
-     "publisher": { "name": "ABC", "link": "https://www.abc.net.au/" }
+     "sourceLink": "https://www.abc.net.au/listen/programs/abc-news-daily"
    }
    ```
 
    - `type` is `Podcast`, `YouTube` or `Blog`.
    - `link` depends on the type: a podcast's RSS feed, a blog's RSS/Atom feed, or a YouTube channel page such as `https://www.youtube.com/@maximilian-schwarzmueller`.
+   - `sourceLink` is the source's own page for people to visit, such as the podcast's homepage. The website links to it next to the source name. It is optional; leave it empty or out to show no link.
    - The file is read again on every run, so you can add or remove sources at any time.
 
 ### Making a digest

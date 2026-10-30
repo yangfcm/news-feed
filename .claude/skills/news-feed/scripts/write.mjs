@@ -20,7 +20,7 @@ const ENTRY_FIELDS = [
   "title",
   "source",
   "type",
-  "publisher",
+  "sourceLink",
   "publishedAt",
   "link",
   "thumbnail",
@@ -103,6 +103,7 @@ function renderMarkdown(day) {
     lines.push(`## ${entry.title}`, "");
     if (entry.thumbnail) lines.push(`![thumbnail|100](${entry.thumbnail})`, "");
     lines.push(`- **Source:** ${entry.source}`);
+    if (entry.sourceLink) lines.push(`- **Source Link:** ${entry.sourceLink}`);
     lines.push(`- **Published:** ${entry.publishedAt}`);
     lines.push(`- **Link:** ${entry.link}`);
     lines.push(`- **Category:** ${entry.category.join(", ")}`);

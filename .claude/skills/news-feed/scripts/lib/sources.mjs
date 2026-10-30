@@ -62,7 +62,6 @@ export function loadSources(path) {
       );
     }
 
-    const publisher = item?.publisher;
     sources.push({
       // `type` keeps the file's own spelling so it shows up verbatim in the output and index.
       type: declaredType || "Unknown",
@@ -70,10 +69,7 @@ export function loadSources(path) {
       title: (typeof item?.title === "string" && item.title.trim()) || hostOf(link),
       link,
       category: asArray(item?.category),
-      publisher:
-        (typeof publisher?.name === "string" && publisher.name.trim()) ||
-        (typeof publisher === "string" && publisher.trim()) ||
-        "",
+      sourceLink: typeof item?.sourceLink === "string" ? item.sourceLink.trim() : "",
       order: index,
     });
   });

@@ -112,7 +112,7 @@ function makeEntry(source, fields, published) {
     title: fields.title,
     source: source.title,
     type: source.type,
-    publisher: source.publisher,
+    sourceLink: source.sourceLink,
     publishedAt: localDateTime(published),
     link: fields.link,
     thumbnail: fields.thumbnail || "",
