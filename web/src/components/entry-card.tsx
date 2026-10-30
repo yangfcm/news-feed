@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { ExternalLinkIcon } from "lucide-react";
 import { AudioPlayer } from "@/components/audio-player";
 import { YouTubePlayer } from "@/components/youtube-player";
 import { Badge } from "@/components/ui/badge";
@@ -20,12 +21,7 @@ export function EntryCard({ entry, eager = false }: { entry: Entry; eager?: bool
   const loading = eager ? "eager" : "lazy";
   const fields = (
     <dl className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 text-sm">
-      <Field label="Source">
-        <span className="flex flex-wrap items-center gap-1.5">
-          {entry.source}
-          <Badge>{entry.type}</Badge>
-        </span>
-      </Field>
+      <Field label="Source">{entry.source}</Field>
       <Field label="Published">{entry.publishedAt}</Field>
       {entry.duration ? <Field label="Duration">{formatDuration(entry.duration)}</Field> : null}
       {entry.category.length ? (
@@ -43,7 +39,7 @@ export function EntryCard({ entry, eager = false }: { entry: Entry; eager?: bool
         <Field label="Tags">
           <span className="flex flex-wrap gap-1">
             {entry.tags.map((t) => (
-              <Badge key={t} variant="outline">
+              <Badge key={t} variant="secondary">
                 #{t}
               </Badge>
             ))}
@@ -58,8 +54,20 @@ export function EntryCard({ entry, eager = false }: { entry: Entry; eager?: bool
       <CardHeader>
         <CardTitle className="text-lg leading-snug">
           <h2>
-            <a href={entry.link} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">
-              {entry.title}
+            {/* Centred on the first line of the title, like the link icon after it. */}
+            <span className="mr-1.5 inline-flex h-[1lh] items-center align-top">
+              <Badge>{entry.type}</Badge>
+            </span>
+            {entry.title}
+            <a
+              href={entry.link}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Open in new window"
+              title="Open in new window"
+              className="ml-1.5 inline-flex h-[1lh] items-center align-top text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <ExternalLinkIcon className="size-4" />
             </a>
           </h2>
         </CardTitle>

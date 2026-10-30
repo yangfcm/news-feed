@@ -48,6 +48,31 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+@theme {
+  --animate-nav-progress: nav-progress 8s cubic-bezier(0.1, 0.7, 0.3, 1) 150ms both;
+  --animate-nav-progress-done: nav-progress-done 300ms ease-out both;
+
+  @keyframes nav-progress {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(0.9);
+    }
+  }
+
+  @keyframes nav-progress-done {
+    from {
+      transform: scaleX(1);
+      opacity: 1;
+    }
+    to {
+      transform: scaleX(1);
+      opacity: 0;
+    }
+  }
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);

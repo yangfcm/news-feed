@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { enUS } from "react-day-picker/locale";
 import { useBrowserToday } from "@/hooks/use-browser-today";
+import { useStartNavigationProgress } from "@/components/navigation-progress";
 import { Calendar } from "@/components/ui/calendar";
 import { parseDateString, toDateString } from "@/lib/format";
 
@@ -14,6 +15,7 @@ export function DateCalendar({
   selected?: string;
 }) {
   const router = useRouter();
+  const startProgress = useStartNavigationProgress();
   const browserToday = useBrowserToday();
   const available = new Set(dates);
   const hasContent = dates.map(parseDateString);
@@ -34,7 +36,11 @@ export function DateCalendar({
         hasContent:
           "font-semibold [&_button]:font-semibold [&_button]:cursor-pointer",
       }}
-      onSelect={(date) => router.push(`/${toDateString(date)}/`)}
+      onSelect={(date) => {
+        const href = `/${toDateString(date)}/`;
+        startProgress(href);
+        router.push(href);
+      }}
       className="w-full rounded-lg border [--cell-size:--spacing(9)]"
       classNames={{ root: "w-full" }}
     />

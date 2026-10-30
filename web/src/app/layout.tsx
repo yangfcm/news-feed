@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { NavigationProgressProvider } from "@/components/navigation-progress";
 import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -30,10 +31,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="flex min-h-full flex-col">
         <ThemeProvider>
-          <TooltipProvider>
-            <SiteHeader />
-            {children}
-          </TooltipProvider>
+          <NavigationProgressProvider>
+            <TooltipProvider>
+              <SiteHeader />
+              {children}
+            </TooltipProvider>
+          </NavigationProgressProvider>
         </ThemeProvider>
       </body>
     </html>

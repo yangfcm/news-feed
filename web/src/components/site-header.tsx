@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { ModeToggle } from "@/components/mode-toggle";
+import { NavigationProgressBar } from "@/components/navigation-progress";
 import { HeaderSlot } from "@/components/sidebar-menu";
 
 export function SiteHeader() {
@@ -16,6 +17,7 @@ export function SiteHeader() {
           <ModeToggle />
         </div>
       </div>
+      <NavigationProgressBar />
     </header>
   );
 }
