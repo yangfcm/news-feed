@@ -3,7 +3,7 @@
 // without Claude. The skill does not use this; it runs fetch.mjs and write.mjs itself so it
 // can write the summaries in between.
 //
-//   node digest.mjs <source.json> [--hours 24 | --date YYYY-MM-DD] [--out output/data]
+//   node digest.mjs [source.json] [--hours 24 | --date YYYY-MM-DD] [--out <dir>]
 //
 // --out goes to write.mjs; every other argument is passed on to fetch.mjs. Each entry is
 // upserted into the day file of its publish date as usual, so summaries written by an

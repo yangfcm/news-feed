@@ -16,6 +16,6 @@ node_modules/
 # Claude Code local overrides
 .claude/settings.local.json
 
-# The generated digests ARE committed, so a frontend can read them straight from
-# the repo. Uncomment the next line instead if you would rather keep data out of git.
-# output/
+# Your sources and digests (source.json, data/). Keep them out of this repo, or make
+# content/ a git repo of its own; see README.md.
+/content/

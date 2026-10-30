@@ -3,7 +3,7 @@
 // publish date, so one run may write several — plus their Markdown notes and the index of
 // dates.
 //
-//   node write.mjs <enriched.json> [--out output/data]
+//   node write.mjs <enriched.json> [--out <dir>]   (default: <content dir>/data)
 //
 // Writing upserts across every day file on disk: an entry already filed is refreshed from
 // the new fetch, a new one is added, and one the new fetch did not return is kept. An entry
@@ -14,7 +14,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { localDate, localDateTime } from "./lib/text.mjs";
-import { PROJECT_ROOT } from "./lib/env.mjs";
+import { contentDir } from "./lib/env.mjs";
 
 const ENTRY_FIELDS = [
   "title",
@@ -190,12 +190,12 @@ function rebuildIndex(outDir) {
 function main() {
   const { inputPath, outDir: outArg } = parseArgs(process.argv.slice(2));
   if (!inputPath) {
-    console.error("usage: node write.mjs <enriched.json> [--out output/data]");
+    console.error("usage: node write.mjs <enriched.json> [--out <dir>]");
     process.exitCode = 2;
     return;
   }
 
-  const outDir = resolve(outArg || join(PROJECT_ROOT, "output", "data"));
+  const outDir = resolve(outArg || join(contentDir(), "data"));
   const input = readJson(inputPath);
   const incoming = (input.entries || []).filter((e) => e?.title && e?.link);
 

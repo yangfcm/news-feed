@@ -4,8 +4,8 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import type { Day, GlobalIndex } from "@/lib/types";
 
-// `next build` runs from web/, and the skill writes its data next to it.
-const DATA_DIR = path.join(process.cwd(), "..", "output", "data");
+// `next build` runs from web/; CONTENT_DIR is relative to the project root.
+const DATA_DIR = path.join(path.resolve(process.cwd(), "..", process.env.CONTENT_DIR || "content"), "data");
 
 function readJson<T>(file: string): T | null {
   if (!existsSync(file)) return null;

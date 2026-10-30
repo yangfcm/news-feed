@@ -29,3 +29,9 @@ export function loadEnv() {
     }
   }
 }
+
+/** Where source.json and data/ live: CONTENT_DIR (relative to the project root), else content/. */
+export function contentDir() {
+  loadEnv();
+  return resolve(PROJECT_ROOT, process.env.CONTENT_DIR || "content");
+}

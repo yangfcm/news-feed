@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-// A static export: every page is rendered to HTML at build time from ../output/data,
+// A static export: every page is rendered to HTML at build time from ../content/data,
 // so the site has to be rebuilt to show a new day (SKILL.md, Step 4).
 const nextConfig: NextConfig = {
   output: "export",

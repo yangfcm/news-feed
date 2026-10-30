@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "title": "ABC News Daily",
+      "link": "https://www.abc.net.au/feeds/9443166/podcast.xml",
+      "type": "Podcast",
+      "category": ["News"],
+      "sourceLink": "https://www.abc.net.au/listen/programs/abc-news-daily"
+    },
+    {
+      "title": "Maximilian Schwarzmueller",
+      "link": "https://www.youtube.com/@maximilian-schwarzmueller",
+      "type": "YouTube",
+      "category": ["Tech"],
+      "sourceLink": "https://www.youtube.com/@maximilian-schwarzmueller"
+    },
+    {
+      "title": "阮一峰的网络日志",
+      "link": "https://www.ruanyifeng.com/blog/atom.xml",
+      "type": "Blog",
+      "category": ["Tech", "Knowledge"],
+      "sourceLink": "https://www.ruanyifeng.com/blog/index.html"
+    }
+  ]
+}

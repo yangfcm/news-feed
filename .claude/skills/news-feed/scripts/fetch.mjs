@@ -2,17 +2,18 @@
 // Collect everything the sources in source.json published in the last N hours, or on one
 // local calendar day.
 //
-//   node fetch.mjs <source.json> [--hours 24 | --date YYYY-MM-DD]   (the project keeps it at input/source.json)
+//   node fetch.mjs [source.json] [--hours 24 | --date YYYY-MM-DD]   (default: <content dir>/source.json)
 //
 // Prints JSON to stdout. `summary` and `tags` are left empty for Claude to fill in.
 // source.json is re-read in full on every run: it is hand-edited between runs, so no
 // part of the source list is cached, inferred from an earlier output, or hardcoded here.
 
+import { join } from "node:path";
 import { durationToSeconds, localDate, localDateTime, parseDate } from "./lib/text.mjs";
 import { fetchText, mapPool } from "./lib/http.mjs";
 import { normaliseFeedEntry, parseFeed } from "./lib/feeds.mjs";
 import { loadSources } from "./lib/sources.mjs";
-import { loadEnv } from "./lib/env.mjs";
+import { contentDir, loadEnv } from "./lib/env.mjs";
 import {
   apiKey,
   bestThumbnail,
@@ -244,14 +245,8 @@ async function collectYouTube(sources, window, country) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  const { sourcePath } = args;
-  if (!sourcePath) {
-    console.error("usage: node fetch.mjs <source.json> [--hours 24 | --date YYYY-MM-DD]");
-    process.exitCode = 2;
-    return;
-  }
-
   loadEnv();
+  const sourcePath = args.sourcePath || join(contentDir(), "source.json");
   const now = new Date();
   const window = resolveWindow(args, now);
   for (const note of window.notes) console.error(`warning: ${note}`);

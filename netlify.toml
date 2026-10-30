@@ -1,16 +1,18 @@
-# Netlify builds the static site in web/ from the digests committed under output/data/.
-# The skill itself runs locally (it needs Claude to write the summaries); pushing its
-# output is what triggers a new deploy.
+# Netlify builds the static site in web/ from the digests in a separate content repo
+# (source.json and data/), which scripts/fetch-content.sh clones into content/ first.
+# Set CONTENT_REPO (and CONTENT_REPO_TOKEN for a private repo) in the site's environment
+# variables. The skill itself runs locally (it needs Claude to write the summaries);
+# pushing to the content repo calls a build hook, which is what triggers a new deploy.
 
 [build]
   base = "web"
-  command = "npm run build"
+  command = "sh ../scripts/fetch-content.sh && npm run build"
   # Relative to base: web/out.
   publish = "out"
-  # With a base directory set, Netlify skips the build when nothing under web/ changed.
-  # The site is built from output/data/, so changes there (and to this file) must count too.
-  # Runs from base; exit 0 = skip, exit 1 = build.
-  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ../output ../netlify.toml"
+  # Runs from base; exit 0 = skip, exit 1 = build. A build hook means new content, so it
+  # always builds. Otherwise, with a base directory set, Netlify would skip the build when
+  # nothing under web/ changed, so the fetch script and this file must count too.
+  ignore = '[ -n "$INCOMING_HOOK_TITLE" ] && exit 1; git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ../scripts ../netlify.toml'
 
 [build.environment]
   # Next.js 16 needs Node 20.9 or later.

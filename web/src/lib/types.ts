@@ -1,4 +1,4 @@
-// Shapes of the files the news-feed skill writes to output/data/ (see SKILL.md, Step 3).
+// Shapes of the files the news-feed skill writes to content/data/ (see SKILL.md, Step 3).
 
 export type Entry = {
   title: string;
@@ -35,7 +35,7 @@ export type Day = {
 export type IndexDate = {
   date: string;
   entryCount: number;
-  /** Relative to output/data/. */
+  /** Relative to content/data/. */
   path: string;
 };
 

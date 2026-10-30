@@ -1,13 +1,13 @@
 ---
 name: news-feed
-description: Build the news digest from the sources listed in input/source.json (podcasts, YouTube channels and blogs). Collects everything published in the last 24 hours (or a given number of hours, or on a given date), writes a Chinese summary and tags for each item, and files each item under its own publish date — a JSON file and a Markdown note per date under output/data/<Year>/<Month>/, plus an index of the dates.
+description: Build the news digest from the sources listed in content/source.json (podcasts, YouTube channels and blogs). Collects everything published in the last 24 hours (or a given number of hours, or on a given date), writes a Chinese summary and tags for each item, and files each item under its own publish date — a JSON file and a Markdown note per date under content/data/<Year>/<Month>/, plus an index of the dates.
 user-invocable: true
 argument-hint: "[hours 1-96 | date YYYY-MM-DD, YYYY/MM/DD or YYYYMMDD; default 24 hours]"
 ---
 
 # News Feed
 
-Collect everything the sources in `input/source.json` published in the last 24 hours, summarise each item in Chinese, and write the digest. The argument changes the window:
+Collect everything the sources in `content/source.json` published in the last 24 hours, summarise each item in Chinese, and write the digest. The argument changes the window:
 
 - a number from 1 to 96: the last that many hours;
 - a date as `YYYY-MM-DD`, `YYYY/MM/DD` or `YYYYMMDD`: everything published on that local calendar day, midnight to midnight. It must be a real date and not after today;
@@ -17,11 +17,13 @@ Every entry is filed under the local date it was **published**, not the date of 
 
 Run everything from the project root.
 
+Your content lives in `content/`: the sources in `content/source.json` and the digests in `content/data/`. When `CONTENT_DIR` is set, in the environment or in `.env` at the project root, it names another folder, relative to the project root; read `content/` below as that folder. The scripts find it on their own.
+
 The work splits in two: the scripts do all fetching, merging and rendering; you write the summaries and tags. Never hand-write the output files — Step 3 generates them.
 
 ## source.json changes between runs
 
-`input/source.json` is hand-edited at any time: items are added and removed, and so are types, categories and source links. On every run, treat the file as it is now.
+`content/source.json` is hand-edited at any time: items are added and removed, and so are types, categories and source links. On every run, treat the file as it is now.
 
 - Never reuse a source list from memory or from an earlier digest. Step 1 re-reads the file in full.
 - `type` is currently `Podcast`, `YouTube` or `Blog`, but a new value may appear at any time. The script reads an unknown type's `link` as an RSS/Atom feed and warns on stderr. Pass that warning on in your report so the user knows the type was not specially handled.
@@ -34,7 +36,7 @@ Install the dependency once, then fetch:
 
 ```bash
 [ -d .claude/skills/news-feed/scripts/node_modules ] || npm install --prefix .claude/skills/news-feed/scripts
-node .claude/skills/news-feed/scripts/fetch.mjs input/source.json --hours 24 > <scratchpad>/raw.json
+node .claude/skills/news-feed/scripts/fetch.mjs --hours 24 > <scratchpad>/raw.json
 ```
 
 Pass the argument on as is: if it is 8 digits or contains `-` or `/`, as `--date <argument>`; otherwise as `--hours <argument>`. With no argument, use `--hours 24`. Let the script validate it — do not reformat or correct the date yourself.
@@ -61,7 +63,7 @@ For each source in `errors`, try once by hand with WebFetch — find its RSS fee
 
 ## Step 2: Write a summary and tags for each entry
 
-First, for every date in `raw.json`'s `dates`, read that day file if it exists (`output/data/<Year>/<Month>/<YYYY-MM-DD>.json`). An entry in `raw.json` whose `link` — or `videoId`, for YouTube — matches one there that already has a summary does not need a new one: leave its `summary` and `tags` empty, and Step 3 keeps the earlier ones. Write summaries and tags only for the rest.
+First, for every date in `raw.json`'s `dates`, read that day file if it exists (`content/data/<Year>/<Month>/<YYYY-MM-DD>.json`). An entry in `raw.json` whose `link` — or `videoId`, for YouTube — matches one there that already has a summary does not need a new one: leave its `summary` and `tags` empty, and Step 3 keeps the earlier ones. Write summaries and tags only for the rest.
 
 All summaries are in **Simplified Chinese**. Choose the method by what the entry is (`type`, or for an entry fetched by hand, what the content actually is).
 
@@ -141,7 +143,7 @@ Each entry goes into the files of its publish date — the local date at the sta
 }
 ```
 
-`path` is relative to `output/data/`. There is no index of the entries themselves: the website filters each day's entries on that day's page, and the day files are the only record of what was collected.
+`path` is relative to `content/data/`. There is no index of the entries themselves: the website filters each day's entries on that day's page, and the day files are the only record of what was collected.
 
 `index.json` is rebuilt from the day files on every run, so a day file edited or deleted by hand is reflected in it on the next run.
 
@@ -170,7 +172,26 @@ cd web && ( [ -d node_modules ] || npm ci ) && npm run build
 
 This writes the site to `web/out/` — `out/index.html` is today's page and `out/<YYYY-MM-DD>/index.html` is one page per date in the index. A failed build does not affect the data files written in Step 3; do not retry it repeatedly or edit the site code to make it pass. Report the error instead.
 
-## Step 5: Report
+## Step 5: Publish the content
+
+Pushing the content repo is what deploys the site: the push calls a build hook, and the build fetches the content repo. Do this only when `content/` is a git repo of its own with a remote:
+
+```bash
+git -C content rev-parse --show-toplevel   # must print the content folder itself
+git -C content remote                      # must print at least one remote
+```
+
+If either check fails, skip this step and say so in the report; the digest stays local. Otherwise commit everything the run changed and push:
+
+```bash
+git -C content add -A
+git -C content commit -m "Add <run date> content."
+git -C content push
+```
+
+`<run date>` is the run date of Step 3: `targetDate` for a date fetch, else today's local date. If nothing changed, there is nothing to commit; skip the push. If the push fails, do not force it or rewrite anything; report the error. The commit stays local until the next push.
+
+## Step 6: Report
 
 Tell the user:
 
@@ -179,6 +200,7 @@ Tell the user:
 - for every day file written: its date, the paths of its JSON and Markdown files, how many entries were added and updated, and that day's total
 - any day files removed and the number of entries moved between days, when there were any
 - whether the site build succeeded (`web/out/`), or the error it failed with
+- whether the content was pushed (with the commit), skipped (and why), or failed to push (with the error)
 - the entry count per source, grouped by type
 - how many Shorts were filtered out, and how many region-restricted videos (with the `country` used, or the warning that it was not set)
 - every source in `errors`, with its reason, and every `source.json` warning
