@@ -1,8 +1,30 @@
 {
   "date": "2026-10-30",
-  "updatedAt": "2026-10-30 21:12",
-  "entryCount": 14,
+  "updatedAt": "2026-10-31 04:07",
+  "entryCount": 15,
   "entries": [
+    {
+      "title": "Sir James Anderson: Lancashire release legendary bowler - Stumped podcast, BBC World Service",
+      "source": "BBC World Service",
+      "type": "YouTube",
+      "sourceLink": "https://www.youtube.com/@BBCWorldService",
+      "publishedAt": "2026-10-30 23:30",
+      "link": "https://www.youtube.com/watch?v=0ROgh0wcBi4",
+      "thumbnail": "https://i.ytimg.com/vi/0ROgh0wcBi4/maxresdefault.jpg",
+      "category": [
+        "News"
+      ],
+      "summary": "英格兰传奇快投手、英格兰队史测试赛三柱门纪录保持者 James Anderson 爵士被英格兰郡队兰开夏郡解约，他自 2001 年起效力该队，并在老特拉福德的最后一个赛季担任队长，他对此表示难过。节目讨论了兰开夏郡的这一决定是否欠缺考虑、球迷是否应理解主教练 Paul Farbrace 的立场，以及 Anderson 下一步可能的去向。节目还谈到 Anderson 入股将于 11 月参加意大利 T10 联赛的 Napoli Knights 球队。这也是 Stumped 在 YouTube 上的最后一期，此后节目仍可通过 BBC 网站及各播客平台收听。",
+      "tags": [
+        "cricket",
+        "james-anderson",
+        "lancashire",
+        "county-cricket"
+      ],
+      "audioLink": null,
+      "videoId": "0ROgh0wcBi4",
+      "duration": 971
+    },
     {
       "title": "It’s ok that computers are (sometimes) better than us",
       "source": "The Stack Overflow",
