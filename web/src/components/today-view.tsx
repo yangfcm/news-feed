@@ -9,15 +9,15 @@ import { useBrowserToday } from "@/hooks/use-browser-today";
  */
 export function TodayView({
   builtFor,
-  latest,
+  dates,
   children,
 }: {
   builtFor: string;
-  latest?: string;
+  dates: string[];
   children: React.ReactNode;
 }) {
   const browserToday = useBrowserToday();
-  if (browserToday && browserToday !== builtFor) return <EmptyDay date={browserToday} latest={latest} />;
+  if (browserToday && browserToday !== builtFor) return <EmptyDay date={browserToday} dates={dates} />;
   return children;
 }
 

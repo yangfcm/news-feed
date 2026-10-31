@@ -31,15 +31,15 @@ export default async function DayPage({ params }: PageProps<"/[date]">) {
   if (!day) {
     return (
       <PageShell dates={dates}>
-        <EmptyDay date={date} latest={dates[0]} />
+        <EmptyDay date={date} dates={dates} />
       </PageShell>
     );
   }
 
   return (
     <EntryFilterProvider items={day.entries.map(toFilterItem)}>
-      <PageShell dates={dates} selected={date} sidebar={<EntryFilters />}>
-        <DayView day={day} />
+      <PageShell dates={dates} selected={date} sidebar={day.entries.length ? <EntryFilters /> : undefined}>
+        <DayView day={day} dates={dates} />
       </PageShell>
     </EntryFilterProvider>
   );
