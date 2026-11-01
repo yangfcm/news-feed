@@ -16,8 +16,8 @@ export default function Home() {
   if (!day) {
     return (
       <PageShell dates={dates}>
-        <TodayView builtFor={builtFor} latest={dates[0]}>
-          <EmptyDay date={builtFor} latest={dates[0]} />
+        <TodayView builtFor={builtFor} dates={dates}>
+          <EmptyDay date={builtFor} dates={dates} />
         </TodayView>
       </PageShell>
     );
@@ -29,13 +29,15 @@ export default function Home() {
         dates={dates}
         selected={builtFor}
         sidebar={
-          <TodayOnly builtFor={builtFor}>
-            <EntryFilters />
-          </TodayOnly>
+          day.entries.length ? (
+            <TodayOnly builtFor={builtFor}>
+              <EntryFilters />
+            </TodayOnly>
+          ) : undefined
         }
       >
-        <TodayView builtFor={builtFor} latest={dates[0]}>
-          <DayView day={day} sourceHrefs={getSourceHrefs()} />
+        <TodayView builtFor={builtFor} dates={dates}>
+          <DayView day={day} dates={dates} sourceHrefs={getSourceHrefs()} />
         </TodayView>
       </PageShell>
     </EntryFilterProvider>
