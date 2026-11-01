@@ -5,7 +5,16 @@ import { entryKey } from "@/lib/filters";
 import type { Day } from "@/lib/types";
 
 /** A day's digest, in the same order as its Markdown note. Must be inside EntryFilterProvider. */
-export function DayView({ day, dates }: { day: Day; dates: string[] }) {
+export function DayView({
+  day,
+  dates,
+  sourceHrefs = {},
+}: {
+  day: Day;
+  dates: string[];
+  /** Each source's page on this site, by source name. */
+  sourceHrefs?: Record<string, string>;
+}) {
   if (!day.entries.length) {
     return (
       <>
@@ -24,7 +33,7 @@ export function DayView({ day, dates }: { day: Day; dates: string[] }) {
         {/* The first cards are above the fold on any viewport, so their images load eagerly. */}
         {day.entries.map((entry, i) => (
           <FilteredEntry key={entryKey(entry)} id={entryKey(entry)}>
-            <EntryCard entry={entry} eager={i < 2} />
+            <EntryCard entry={entry} eager={i < 2} sourceHref={sourceHrefs[entry.source]} />
           </FilteredEntry>
         ))}
       </div>

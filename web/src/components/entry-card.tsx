@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { ExternalLinkIcon } from "lucide-react";
 import { AudioPlayer } from "@/components/audio-player";
 import { YouTubePlayer } from "@/components/youtube-player";
@@ -17,12 +18,27 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 /** One entry, laid out like its section in the day's Markdown note. */
-export function EntryCard({ entry, eager = false }: { entry: Entry; eager?: boolean }) {
+export function EntryCard({
+  entry,
+  eager = false,
+  sourceHref,
+}: {
+  entry: Entry;
+  eager?: boolean;
+  /** The source's own page on this site; the name is plain text without it. */
+  sourceHref?: string;
+}) {
   const loading = eager ? "eager" : "lazy";
   const fields = (
     <dl className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 text-sm">
       <Field label="Source">
-        {entry.source}
+        {sourceHref ? (
+          <Link href={sourceHref} className="underline-offset-4 hover:underline">
+            {entry.source}
+          </Link>
+        ) : (
+          entry.source
+        )}
         {entry.sourceLink ? (
           <a
             href={entry.sourceLink}

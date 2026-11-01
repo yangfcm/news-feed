@@ -92,3 +92,17 @@ export function localDate(d) {
 export function localDateTime(d) {
   return `${localDate(d)} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
+
+/**
+ * A URL-safe name for a source: lower case, with every run of characters that is not a letter
+ * or digit (in any script, so Chinese names keep their characters) collapsed into one hyphen.
+ * Empty input gives "source". Uniqueness is the caller's job.
+ */
+export function slugify(text) {
+  const slug = String(text ?? "")
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
+    .replace(/^-+|-+$/g, "");
+  return slug || "source";
+}

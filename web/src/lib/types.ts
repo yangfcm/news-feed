@@ -43,3 +43,37 @@ export type GlobalIndex = {
   updatedAt?: string;
   dates: IndexDate[];
 };
+
+/** One row of sources/index.json. */
+export type SourceSummary = {
+  name: string;
+  /** The URL segment of the source's page; the file is sources/<slug>.json. */
+  slug: string;
+  type: string;
+  category: string[];
+  sourceLink: string;
+  entryCount: number;
+  /** "" when the source has no entries yet. */
+  latestPublishedAt: string;
+  /** Relative to content/data/. */
+  path: string;
+};
+
+export type SourceIndex = {
+  updatedAt?: string;
+  sourceCount: number;
+  entryCount: number;
+  sources: SourceSummary[];
+};
+
+/** A source file: everything one source has published, newest first. */
+export type Source = {
+  name: string;
+  slug: string;
+  type: string;
+  category: string[];
+  sourceLink: string;
+  updatedAt: string;
+  entryCount: number;
+  entries: Entry[];
+};
