@@ -92,7 +92,7 @@ Write the result to `<scratchpad>/enriched.json`: the same structure as `raw.jso
 node .claude/skills/news-feed/scripts/write.mjs <scratchpad>/enriched.json
 ```
 
-Each entry goes into the files of its publish date — the local date at the start of its `publishedAt`. For every date that gains, loses or changes an entry, the script writes the two day files below. The **run date's** day file — `targetDate` for a date fetch, else today's local date — is always written, even when it ends up with no entries, because it is the one that records this run's fetch errors. Then it rebuilds `index.json`. A `publishedAt` in the future — a podcast scheduled ahead — goes into that future date's file.
+Each entry goes into the files of its publish date — the local date at the start of its `publishedAt`. For every date that gains, loses or changes an entry, the script writes the two day files below. The **run date's** day file — `targetDate` for a date fetch, else today's local date — is always written, even when it ends up with no entries, because it is the one that records this run's fetch errors. Then it rebuilds `index.json`, and the source files under `sources/`. A `publishedAt` in the future — a podcast scheduled ahead — goes into that future date's file.
 
 **`<Year>/<Month>/<YYYY-MM-DD>.json`**
 
@@ -143,9 +143,50 @@ Each entry goes into the files of its publish date — the local date at the sta
 }
 ```
 
-`path` is relative to `content/data/`. There is no index of the entries themselves: the website filters each day's entries on that day's page, and the day files are the only record of what was collected.
+`path` is relative to `content/data/`. There is no index of the entries themselves: the website filters each day's entries on that day's page.
 
 `index.json` is rebuilt from the day files on every run, so a day file edited or deleted by hand is reflected in it on the next run.
+
+**`sources/<slug>.json`** — everything one source has published, newest first, so the website can show a source's page without reading every day file. The day files are the record of what was collected; the source files are derived from them, from every entry on disk after the day files are written, and never from an earlier source file. One is written for every source that has an entry in any day file, and for every source in `source.json`, even with no entries yet:
+
+```json
+{
+  "name": "ABC News Daily",
+  "slug": "abc-news-daily",
+  "type": "Podcast",
+  "category": ["News"],
+  "sourceLink": "https://www.abc.net.au/listen/programs/abc-news-daily",
+  "updatedAt": "2026-10-29 13:40",
+  "entryCount": 2,
+  "entries": [{ "...": "the same entries as in the day files" }]
+}
+```
+
+A source is identified by its name, the `source` of its entries. `type`, `category` and `sourceLink` come from its item in `source.json`, or from its newest entry when it is not listed there. `slug` is the URL segment of the source's page on the website and the file's name: lower-case letters and digits in any script (so a Chinese name keeps its characters), with every other run of characters replaced by one hyphen, and a number appended when two names give the same slug. A source keeps the slug its file already has, so its URL never changes. Like a day file, a source file is only rewritten when its content changed, `updatedAt` included; one whose source has no entries left and is no longer in `source.json` is deleted.
+
+**`sources/index.json`** — the list of sources, by name, which the website builds its sources page from:
+
+```json
+{
+  "updatedAt": "2026-10-29 13:40",
+  "sourceCount": 3,
+  "entryCount": 11,
+  "sources": [
+    {
+      "name": "ABC News Daily",
+      "slug": "abc-news-daily",
+      "type": "Podcast",
+      "category": ["News"],
+      "sourceLink": "https://www.abc.net.au/listen/programs/abc-news-daily",
+      "entryCount": 2,
+      "latestPublishedAt": "2026-10-29 06:00",
+      "path": "sources/abc-news-daily.json"
+    }
+  ]
+}
+```
+
+`latestPublishedAt` is `""` for a source with no entries. `path` is relative to `content/data/`.
 
 ### Running more than once a day
 
@@ -159,8 +200,9 @@ The skill is meant to run once a day, but running it again is safe and is the no
 - **An entry in the wrong day file is moved** to the file of its publish date — for instance after its `publishedAt` changed, or in a file written before entries were filed by publish date. A file left empty by such moves is deleted along with its note. The same item found in two day files is merged into one, keeping any summary and tags.
 - A day file whose content did not change is left exactly as it is, `updatedAt` included.
 - `updatedAt`, `entryCount` and the Markdown note of every day file written, and `index.json`, are refreshed.
+- The source files are rebuilt from the day files as they now are, so they always agree with them; a source with nothing new keeps its file as it was.
 
-The script prints, for every day file it wrote, its date, its JSON and Markdown paths, how many entries it added and updated and its total (`days`); the day files it removed (`removed`); how many entries it moved between days (`moved`); the totals added and updated; how many it skipped as duplicates within this run; and the path of `index.json`.
+The script prints, for every day file it wrote, its date, its JSON and Markdown paths, how many entries it added and updated and its total (`days`); the day files it removed (`removed`); how many entries it moved between days (`moved`); the totals added and updated; how many it skipped as duplicates within this run; the path of `index.json`; and under `sources`, the source files it wrote (`written`: name, slug, path and entry count of each) and removed (`removed`), the path of `sources/index.json` (`index`) and how many sources it indexed (`sourceCount`).
 
 ## Step 4: Build the site
 
@@ -170,7 +212,7 @@ The website in `web/` is a static Next.js export: every day page is rendered int
 cd web && ( [ -d node_modules ] || npm ci ) && npm run build
 ```
 
-This writes the site to `web/out/` — `out/index.html` is today's page and `out/<YYYY-MM-DD>/index.html` is one page per date in the index. A failed build does not affect the data files written in Step 3; do not retry it repeatedly or edit the site code to make it pass. Report the error instead.
+This writes the site to `web/out/` — `out/index.html` is today's page, `out/<YYYY-MM-DD>/index.html` is one page per date in the index, `out/sources/index.html` lists the sources and `out/source/<slug>/index.html` is one page per source in `sources/index.json`. A failed build does not affect the data files written in Step 3; do not retry it repeatedly or edit the site code to make it pass. Report the error instead.
 
 ## Step 5: Publish the content
 

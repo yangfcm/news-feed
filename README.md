@@ -19,9 +19,12 @@ Each run collects everything your sources published in the last 24 hours and pub
 
    `content/data/index.json` lists every day that has a digest; the website builds its calendar and pages from it. Running again updates the items already filed and adds the new ones to their day. Summaries and tags already written are kept unless new ones are written.
 
+   Each run also rebuilds, from the day files, one file per source under `content/data/sources/` with everything that source has published, plus `sources/index.json` listing the sources. A source with nothing new keeps its file as it was.
+
 4. **Publish.** The website in [`web/`](web) is a static [Next.js](https://nextjs.org) site built with [shadcn/ui](https://ui.shadcn.com):
    - the home page shows today's digest, and every past day has its own page;
    - a calendar in the sidebar jumps between days that have content;
+   - every source has its own page with everything it has published, reached from the **Sources** page or from the source's name on any item;
    - podcast episodes play in an inline audio player, and YouTube videos in an embedded player;
    - it has light and dark themes.
 
@@ -30,7 +33,8 @@ Each run collects everything your sources published in the last 24 hours and pub
 ```
 content/                        your content, kept out of this repo (gitignored)
   source.json                   the sources to follow (edit by hand)
-  data/                         the generated digests
+  data/                         the generated digests: a JSON file and a Markdown note per day,
+                                index.json listing the days, and sources/ with a file per source
 source.example.json             a starting source.json; `npm run setup` copies it into content/
 .claude/skills/news-feed/       the skill: instructions (SKILL.md) and fetch/write scripts
 web/                            the website (Next.js static export)
@@ -179,6 +183,6 @@ Run these from the project root. The root [`package.json`](package.json) only ho
 | `npm run setup`   | Installs the dependencies of the skill scripts (`.claude/skills/news-feed/scripts/`) and does a clean install of the website (`web/`) from its lockfile. Creates `content/source.json` from `source.example.json` if it does not exist yet. Run it after cloning, or when a lockfile changes.                                                                                                                                          |
 | `npm run digest`  | Makes the digest without Claude: fetches what the sources in `content/source.json` published in the last 24 hours, then writes each item into the JSON and Markdown note of the day it was published, and the index of dates, into `content/data/`, with no summaries or tags. Items already filed are updated and new ones added; summaries written earlier are kept. Pass `--hours` (1 to 96) for a different window, e.g. `npm run digest -- --hours 12`, `--date` for one day, e.g. `npm run digest -- --date 2026-10-27`, or `--out <dir>` to try a run without touching `content/data/`. Run `npm run build` afterwards to update the website. |
 | `npm run dev`     | Starts the website's development server at http://localhost:3000. Pages read `content/data/` on every request, so new data shows up on refresh.                                                                                                                                                                                                      |
-| `npm run build`   | Builds the static website into `web/out/`: `index.html` for today, plus one `<date>/index.html` per day in the index. Rebuild after new data is written. The skill does this as its last step.                                                                                                                                                      |
+| `npm run build`   | Builds the static website into `web/out/`: `index.html` for today, one `<date>/index.html` per day in the index, `sources/index.html` listing the sources and one `source/<slug>/index.html` per source. Rebuild after new data is written. The skill does this as its last step.                                                                                                                                                      |
 | `npm run preview` | Serves the built `web/out/` locally, to check the production build before deploying.                                                                                                                                                                                                                                                                |
 | `npm run lint`    | Runs ESLint over the website code.                                                                                                                                                                                                                                                                                                                  |

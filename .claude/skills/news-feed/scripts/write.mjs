@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Turn the enriched entries into day files — each entry goes into the file of its own
 // publish date, so one run may write several — plus their Markdown notes and the index of
-// dates.
+// dates. Then, from the same entries, one file per source under sources/, so the website can
+// show everything a source has published without reading every day file.
 //
 //   node write.mjs <enriched.json> [--out <dir>]   (default: <content dir>/data)
 //
@@ -13,7 +14,7 @@
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { localDate, localDateTime } from "./lib/text.mjs";
+import { localDate, localDateTime, slugify } from "./lib/text.mjs";
 import { contentDir } from "./lib/env.mjs";
 
 const ENTRY_FIELDS = [
@@ -139,13 +140,21 @@ const DAY_FILE = /^\d{4}-\d{2}-\d{2}\.json$/;
 
 const dayPath = (outDir, date) => join(outDir, ...date.split("-").slice(0, 2), `${date}.json`);
 
+/** The source files live in their own folder under outDir, next to the year folders. */
+const SOURCES_DIR = "sources";
+const sourcesDir = (outDir) => join(outDir, SOURCES_DIR);
+const sourcePath = (outDir, slug) => join(sourcesDir(outDir), `${slug}.json`);
+
 /** Every readable day file under outDir, with its path and its text as it is on disk. */
 function readDayFiles(outDir, { warn = true } = {}) {
   const days = [];
   if (!existsSync(outDir)) return days;
+  const sources = sourcesDir(outDir);
   for (const dirent of readdirSync(outDir, { recursive: true, withFileTypes: true })) {
     if (!dirent.isFile() || !DAY_FILE.test(dirent.name)) continue;
     const path = join(dirent.parentPath ?? dirent.path, dirent.name);
+    // A source whose name looks like a date is not a day.
+    if (path.startsWith(sources + "/") || path.startsWith(sources + "\\")) continue;
     let text;
     let day;
     try {
@@ -185,6 +194,155 @@ function rebuildIndex(outDir) {
     entryCount: dates.reduce((sum, d) => sum + d.entryCount, 0),
     dates,
   };
+}
+
+/**
+ * The sources listed in source.json, by title. They give a source's type, categories and
+ * link when it has no entries yet, and are the authority on them when it has.
+ */
+function readConfiguredSources() {
+  const path = join(contentDir(), "source.json");
+  if (!existsSync(path)) return new Map();
+  let items;
+  try {
+    items = readJson(path).items;
+  } catch {
+    console.error(`warning: could not read ${path}; source files take their details from the entries`);
+    return new Map();
+  }
+  const sources = new Map();
+  for (const item of Array.isArray(items) ? items : []) {
+    const name = String(item?.title ?? "").trim();
+    if (!name || sources.has(name)) continue;
+    sources.set(name, {
+      type: String(item.type ?? ""),
+      category: Array.isArray(item.category) ? item.category : [],
+      sourceLink: String(item.sourceLink ?? ""),
+    });
+  }
+  return sources;
+}
+
+/** Every readable source file on disk, by source name, with its text as it is on disk. */
+function readSourceFiles(outDir) {
+  const sources = new Map();
+  const dir = sourcesDir(outDir);
+  if (!existsSync(dir)) return sources;
+  for (const dirent of readdirSync(dir, { withFileTypes: true })) {
+    if (!dirent.isFile() || !dirent.name.endsWith(".json") || dirent.name === "index.json") continue;
+    const path = join(dir, dirent.name);
+    let text;
+    let source;
+    try {
+      text = readFileSync(path, "utf8");
+      source = JSON.parse(text);
+    } catch {
+      console.error(`warning: skipping unreadable ${path}`);
+      continue;
+    }
+    if (!source?.name || !Array.isArray(source.entries)) continue;
+    sources.set(source.name, { ...source, path, text });
+  }
+  return sources;
+}
+
+/** An entry's source name; entries written before sources were recorded may have none. */
+const sourceName = (entry) => String(entry.source ?? "").trim() || "Unknown source";
+
+/**
+ * Write one file per source from the entries, which are every entry on disk after the day
+ * files were written, plus an index of the sources. Like the day files, a source file is only
+ * rewritten when its content changed, so a source with nothing new is left as it is,
+ * `updatedAt` included. A source keeps the slug its file already has, so its URL never
+ * changes; a new source gets one from its name, made unique against the ones in use.
+ */
+function writeSources(outDir, entries, now) {
+  const configured = readConfiguredSources();
+  const previous = readSourceFiles(outDir);
+
+  const groups = new Map();
+  for (const name of configured.keys()) groups.set(name, []);
+  for (const entry of entries) {
+    const name = sourceName(entry);
+    if (!groups.has(name)) groups.set(name, []);
+    groups.get(name).push(entry);
+  }
+
+  // Slugs already on disk are kept; the rest are assigned in name order, so a run is reproducible.
+  const slugs = new Map();
+  const taken = new Set();
+  for (const name of groups.keys()) {
+    const slug = previous.get(name)?.slug;
+    if (slug && !taken.has(slug)) {
+      slugs.set(name, slug);
+      taken.add(slug);
+    }
+  }
+  for (const name of [...groups.keys()].filter((n) => !slugs.has(n)).sort((a, b) => a.localeCompare(b, "en"))) {
+    const base = slugify(name);
+    let slug = base;
+    for (let n = 2; taken.has(slug); n += 1) slug = `${base}-${n}`;
+    slugs.set(name, slug);
+    taken.add(slug);
+  }
+
+  const written = [];
+  const index = [];
+  for (const [name, group] of groups) {
+    const sorted = [...group].sort(byPublishedDesc);
+    // source.json is the authority on a source's details; failing that, its newest entry.
+    const details = configured.get(name) ??
+      (sorted[0]
+        ? { type: sorted[0].type, category: sorted[0].category, sourceLink: sorted[0].sourceLink }
+        : { type: "", category: [], sourceLink: "" });
+    const before = previous.get(name);
+    const slug = slugs.get(name);
+    const source = {
+      name,
+      slug,
+      ...details,
+      updatedAt: before?.updatedAt ?? "",
+      entryCount: sorted.length,
+      entries: sorted,
+    };
+    const path = before?.path ?? sourcePath(outDir, slug);
+    if (!before || serialise(source) !== before.text) {
+      source.updatedAt = localDateTime(now);
+      writeFile(path, serialise(source));
+      written.push({ name, slug, path, entryCount: source.entryCount });
+    }
+    index.push({
+      name,
+      slug,
+      type: source.type,
+      category: source.category,
+      sourceLink: source.sourceLink,
+      entryCount: source.entryCount,
+      latestPublishedAt: sorted[0]?.publishedAt ?? "",
+      path: `${SOURCES_DIR}/${slug}.json`,
+    });
+  }
+
+  // A source with no entries left and no longer in source.json has nothing to show.
+  const removed = [];
+  for (const [name, before] of previous) {
+    if (groups.has(name)) continue;
+    rmSync(before.path, { force: true });
+    removed.push(before.path);
+  }
+
+  index.sort((a, b) => a.name.localeCompare(b.name, "en"));
+  const indexPath = join(sourcesDir(outDir), "index.json");
+  writeFile(
+    indexPath,
+    serialise({
+      updatedAt: localDateTime(now),
+      sourceCount: index.length,
+      entryCount: index.reduce((sum, s) => sum + s.entryCount, 0),
+      sources: index,
+    }),
+  );
+  return { written, removed, index: indexPath, sourceCount: index.length };
 }
 
 function main() {
@@ -299,6 +457,13 @@ function main() {
   const index = rebuildIndex(outDir);
   writeFile(indexPath, serialise(index));
 
+  // The pool now holds every entry on disk, so the source files come from it directly.
+  const sources = writeSources(
+    outDir,
+    [...pool.values()].map(({ entry }) => entry),
+    now,
+  );
+
   const total = (field) => [...stats.values()].reduce((sum, s) => sum + s[field], 0);
   const summary = {
     days: written,
@@ -310,6 +475,7 @@ function main() {
     skippedAsDuplicate: incoming.length - seenThisRun.size,
     indexedDays: index.dateCount,
     indexedEntries: index.entryCount,
+    sources,
   };
   process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
 }

@@ -3,7 +3,7 @@ import { EmptyDay } from "@/components/empty-day";
 import { EntryFilterProvider, EntryFilters } from "@/components/entry-filters";
 import { PageShell } from "@/components/page-shell";
 import { TodayOnly, TodayView } from "@/components/today-view";
-import { getAvailableDates, getDay } from "@/lib/data";
+import { getAvailableDates, getDay, getSourceHrefs } from "@/lib/data";
 import { toFilterItem } from "@/lib/filters";
 import { toDateString } from "@/lib/format";
 
@@ -35,7 +35,7 @@ export default function Home() {
         }
       >
         <TodayView builtFor={builtFor} latest={dates[0]}>
-          <DayView day={day} />
+          <DayView day={day} sourceHrefs={getSourceHrefs()} />
         </TodayView>
       </PageShell>
     </EntryFilterProvider>

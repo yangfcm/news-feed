@@ -3,7 +3,7 @@ import { DayView } from "@/components/day-view";
 import { EmptyDay } from "@/components/empty-day";
 import { EntryFilterProvider, EntryFilters } from "@/components/entry-filters";
 import { PageShell } from "@/components/page-shell";
-import { getAvailableDates, getDay } from "@/lib/data";
+import { getAvailableDates, getDay, getSourceHrefs } from "@/lib/data";
 import { toFilterItem } from "@/lib/filters";
 
 // Only the dates in the index exist; a static export cannot render others on demand.
@@ -39,7 +39,7 @@ export default async function DayPage({ params }: PageProps<"/[date]">) {
   return (
     <EntryFilterProvider items={day.entries.map(toFilterItem)}>
       <PageShell dates={dates} selected={date} sidebar={<EntryFilters />}>
-        <DayView day={day} />
+        <DayView day={day} sourceHrefs={getSourceHrefs()} />
       </PageShell>
     </EntryFilterProvider>
   );

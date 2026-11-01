@@ -3,6 +3,7 @@ import { Logo } from "@/components/logo";
 import { ModeToggle } from "@/components/mode-toggle";
 import { NavigationProgressBar } from "@/components/navigation-progress";
 import { HeaderSlot } from "@/components/sidebar-menu";
+import { Button } from "@/components/ui/button";
 
 export function SiteHeader() {
   return (
@@ -13,6 +14,9 @@ export function SiteHeader() {
           News Feed
         </Link>
         <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" render={<Link href="/sources/" />} className="text-muted-foreground">
+            Sources
+          </Button>
           <HeaderSlot />
           <ModeToggle />
         </div>
