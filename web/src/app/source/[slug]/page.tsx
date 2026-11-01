@@ -4,7 +4,7 @@ import { PageShell } from "@/components/page-shell";
 import { SourceList } from "@/components/source-list";
 import { SourceView } from "@/components/source-view";
 import { Card, CardContent } from "@/components/ui/card";
-import { getAvailableDates, getSource, getSourceIndex } from "@/lib/data";
+import { getAvailableDates, getSource, getSourceIndex, withEncodedSlugs } from "@/lib/data";
 
 // Only the sources in the index exist; a static export cannot render others on demand.
 export const dynamicParams = false;
@@ -15,12 +15,7 @@ const NO_SOURCES = "no-sources-yet";
 
 export function generateStaticParams() {
   const slugs = getSourceIndex().sources.map((s) => s.slug);
-  // The dev server checks the request's percent-encoded path against these, so a slug with
-  // non-ASCII characters (a Chinese name) also needs its encoded form there. The build doesn't.
-  if (process.env.NODE_ENV === "development") {
-    slugs.push(...slugs.map(encodeURIComponent).filter((encoded) => !slugs.includes(encoded)));
-  }
-  return (slugs.length ? slugs : [NO_SOURCES]).map((slug) => ({ slug }));
+  return withEncodedSlugs((slugs.length ? slugs : [NO_SOURCES]).map((slug) => ({ slug })));
 }
 
 export async function generateMetadata({ params }: PageProps<"/source/[slug]">): Promise<Metadata> {

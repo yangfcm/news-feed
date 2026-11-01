@@ -1,19 +1,11 @@
-import Link from "next/link";
 import { ExternalLinkIcon } from "lucide-react";
-import { EntryCard } from "@/components/entry-card";
+import { SourceEntries } from "@/components/source-entries";
 import { Badge } from "@/components/ui/badge";
-import { entryKey } from "@/lib/filters";
+import { BATCH_SIZE } from "@/lib/batches";
 import type { Source } from "@/lib/types";
 
-/** Everything one source has published, newest first, grouped under the day it was published. */
+/** A source's page: its heading, then everything it has published, newest first. */
 export function SourceView({ source, dates }: { source: Source; dates: string[] }) {
-  const hasDay = new Set(dates);
-  const days = new Map<string, Source["entries"]>();
-  for (const entry of source.entries) {
-    const date = entry.publishedAt.slice(0, 10);
-    if (!days.has(date)) days.set(date, []);
-    days.get(date)!.push(entry);
-  }
   const count = `${source.entryCount} ${source.entryCount === 1 ? "entry" : "entries"}`;
 
   return (
@@ -39,29 +31,12 @@ export function SourceView({ source, dates }: { source: Source; dates: string[] 
           {source.updatedAt ? <span className="ml-1">Updated At {source.updatedAt}</span> : null}
         </div>
       </div>
-      {days.size ? (
-        <div className="flex flex-col gap-8">
-          {[...days].map(([date, entries], i) => (
-            <section key={date} className="flex flex-col gap-4">
-              <h2 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
-                {hasDay.has(date) ? (
-                  <Link href={`/${date}/`} className="underline-offset-4 hover:text-foreground hover:underline">
-                    {date}
-                  </Link>
-                ) : (
-                  date
-                )}
-              </h2>
-              {entries.map((entry) => (
-                // The first cards are above the fold on any viewport, so their images load eagerly.
-                <EntryCard key={entryKey(entry)} entry={entry} eager={i === 0} />
-              ))}
-            </section>
-          ))}
-        </div>
-      ) : (
-        <p className="text-muted-foreground">Nothing from this source yet.</p>
-      )}
+      <SourceEntries
+        slug={source.slug}
+        initial={source.entries.slice(0, BATCH_SIZE)}
+        total={source.entries.length}
+        dates={dates}
+      />
     </>
   );
 }

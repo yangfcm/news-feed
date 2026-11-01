@@ -57,3 +57,16 @@ export function getSource(slug: string): Source | null {
   if (!source || !Array.isArray(source.entries)) return null;
   return source;
 }
+
+/**
+ * Static params keyed by a source's slug, for generateStaticParams. The dev server checks the
+ * request's percent-encoded path against them, so a slug with non-ASCII characters (a Chinese
+ * name) also needs its encoded form there. The build doesn't.
+ */
+export function withEncodedSlugs<T extends { slug: string }>(params: T[]): T[] {
+  if (process.env.NODE_ENV !== "development") return params;
+  const encoded = params
+    .map((param) => ({ ...param, slug: encodeURIComponent(param.slug) }))
+    .filter((param, i) => param.slug !== params[i].slug);
+  return [...params, ...encoded];
+}

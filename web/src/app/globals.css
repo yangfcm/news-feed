@@ -49,6 +49,7 @@
 }
 
 @theme {
+  --breakpoint-xs: 30rem;
   --animate-nav-progress: nav-progress 8s cubic-bezier(0.1, 0.7, 0.3, 1) 150ms both;
   --animate-nav-progress-done: nav-progress-done 300ms ease-out both;
 

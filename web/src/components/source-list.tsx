@@ -52,18 +52,20 @@ export function SourceDirectory({ sources }: { sources: SourceSummary[] }) {
               >
                 <span className="flex min-w-0 flex-1 items-center gap-2 font-medium">
                   <span className="min-w-0">{source.name}</span>
-                  {source.type ? <Badge>{source.type}</Badge> : null}
+                  {source.type ? <Badge className="hidden xs:inline-flex">{source.type}</Badge> : null}
                 </span>
                 <span className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
                   {source.category.map((c) => (
-                    <Badge key={c} variant="secondary">
+                    <Badge key={c} variant="secondary" className="hidden sm:inline-flex">
                       {c}
                     </Badge>
                   ))}
-                  <span className="ml-1">
+                  <span className="sm:ml-1">
                     {source.entryCount} {source.entryCount === 1 ? "entry" : "entries"}
                   </span>
-                  {source.latestPublishedAt ? <span>· latest {source.latestPublishedAt.slice(0, 10)}</span> : null}
+                  {source.latestPublishedAt ? (
+                    <span className="hidden sm:inline">· latest {source.latestPublishedAt.slice(0, 10)}</span>
+                  ) : null}
                 </span>
               </Link>
             </li>

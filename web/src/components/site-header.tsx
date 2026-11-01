@@ -16,9 +16,16 @@ export function SiteHeader() {
           News Feed
         </Link>
         <div className="flex items-center gap-2">
-          <Link href="/sources/" className={cn(buttonVariants({ variant: "outline" }))}>
+          <Link
+            href="/sources/"
+            aria-label="Sources"
+            className={cn(
+              buttonVariants({ variant: "outline" }),
+              "max-xs:w-8 max-xs:px-0 max-xs:has-data-[icon=inline-start]:pl-0",
+            )}
+          >
             <RssIcon data-icon="inline-start" />
-            Sources
+            <span className="hidden xs:inline">Sources</span>
           </Link>
           <HeaderSlot />
           <ModeToggle />
