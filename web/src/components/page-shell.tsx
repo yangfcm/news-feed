@@ -3,7 +3,8 @@ import { SidebarMenu } from "@/components/sidebar-menu";
 
 /**
  * The two-column layout every page shares: content on the left, calendar (and sidebar) on
- * the right. On narrower screens the sidebar opens from a header button instead.
+ * the right. On narrower screens the sidebar opens from a header button instead. Without
+ * `dates` there is no calendar, and without either the page is a single column.
  */
 export function PageShell({
   dates,
@@ -11,15 +12,23 @@ export function PageShell({
   sidebar,
   children,
 }: {
-  dates: string[];
+  dates?: string[];
   selected?: string;
   /** Shown under the calendar. */
   sidebar?: React.ReactNode;
   children: React.ReactNode;
 }) {
+  if (!dates && !sidebar) {
+    return (
+      <div className="mx-auto w-full max-w-7xl px-4 py-8">
+        <main className="min-w-0">{children}</main>
+      </div>
+    );
+  }
+
   const sidebarContent = (
     <>
-      <DateCalendar dates={dates} selected={selected} />
+      {dates ? <DateCalendar dates={dates} selected={selected} /> : null}
       {sidebar}
     </>
   );

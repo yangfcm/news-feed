@@ -15,24 +15,29 @@ const NO_SOURCES = "no-sources-yet";
 
 export function generateStaticParams() {
   const slugs = getSourceIndex().sources.map((s) => s.slug);
+  // The dev server checks the request's percent-encoded path against these, so a slug with
+  // non-ASCII characters (a Chinese name) also needs its encoded form there. The build doesn't.
+  if (process.env.NODE_ENV === "development") {
+    slugs.push(...slugs.map(encodeURIComponent).filter((encoded) => !slugs.includes(encoded)));
+  }
   return (slugs.length ? slugs : [NO_SOURCES]).map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: PageProps<"/source/[slug]">): Promise<Metadata> {
-  const { slug } = await params;
+  const slug = decodeURIComponent((await params).slug);
   const name = getSourceIndex().sources.find((s) => s.slug === slug)?.name ?? slug;
   return { title: `News Feed · ${name}` };
 }
 
 export default async function SourcePage({ params }: PageProps<"/source/[slug]">) {
-  const { slug } = await params;
+  const slug = decodeURIComponent((await params).slug);
   const source = getSource(slug);
   const sources = getSourceIndex().sources;
   const dates = getAvailableDates();
 
   if (!source) {
     return (
-      <PageShell dates={dates}>
+      <PageShell>
         <h1 className="mb-6 text-3xl font-semibold tracking-tight">Source</h1>
         <Card>
           <CardContent className="flex flex-col gap-2 text-muted-foreground">
@@ -49,7 +54,7 @@ export default async function SourcePage({ params }: PageProps<"/source/[slug]">
   }
 
   return (
-    <PageShell dates={dates} sidebar={<SourceList sources={sources} selected={slug} />}>
+    <PageShell sidebar={<SourceList sources={sources} selected={slug} />}>
       <SourceView source={source} dates={dates} />
     </PageShell>
   );

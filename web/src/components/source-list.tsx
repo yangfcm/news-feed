@@ -10,7 +10,7 @@ export function SourceList({ sources, selected }: { sources: SourceSummary[]; se
   return (
     <Card size="sm">
       <CardHeader>
-        <CardTitle>Sources</CardTitle>
+        <CardTitle>All Sources</CardTitle>
       </CardHeader>
       <CardContent>
         <ul className="flex flex-col">
@@ -38,45 +38,38 @@ export function SourceList({ sources, selected }: { sources: SourceSummary[]; se
   );
 }
 
-/** The sources grouped by type, each a link to its page, for the sources page. */
-export function SourceGroups({ sources }: { sources: SourceSummary[] }) {
-  const types = [...new Set(sources.map((s) => s.type || "Other"))].sort((a, b) => a.localeCompare(b, "en"));
+/** Every source, each a link to its page, for the sources page. */
+export function SourceDirectory({ sources }: { sources: SourceSummary[] }) {
   return (
-    <div className="flex flex-col gap-6">
-      {types.map((type) => (
-        <Card key={type}>
-          <CardHeader>
-            <CardTitle className="text-lg">{type}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="divide-y">
-              {sources
-                .filter((s) => (s.type || "Other") === type)
-                .map((source) => (
-                  <li key={source.slug}>
-                    <Link
-                      href={sourceHref(source.slug)}
-                      className="flex flex-wrap items-center gap-x-4 gap-y-1 py-3 transition-colors hover:text-primary"
-                    >
-                      <span className="min-w-0 flex-1 font-medium">{source.name}</span>
-                      <span className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
-                        {source.category.map((c) => (
-                          <Badge key={c} variant="secondary">
-                            {c}
-                          </Badge>
-                        ))}
-                        <span className="ml-1">
-                          {source.entryCount} {source.entryCount === 1 ? "entry" : "entries"}
-                        </span>
-                        {source.latestPublishedAt ? <span>· latest {source.latestPublishedAt.slice(0, 10)}</span> : null}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-            </ul>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+    <Card>
+      <CardContent>
+        <ul className="divide-y">
+          {sources.map((source) => (
+            <li key={source.slug}>
+              <Link
+                href={sourceHref(source.slug)}
+                className="flex flex-wrap items-center gap-x-4 gap-y-1 py-3 transition-colors hover:text-primary"
+              >
+                <span className="flex min-w-0 flex-1 items-center gap-2 font-medium">
+                  <span className="min-w-0">{source.name}</span>
+                  {source.type ? <Badge>{source.type}</Badge> : null}
+                </span>
+                <span className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
+                  {source.category.map((c) => (
+                    <Badge key={c} variant="secondary">
+                      {c}
+                    </Badge>
+                  ))}
+                  <span className="ml-1">
+                    {source.entryCount} {source.entryCount === 1 ? "entry" : "entries"}
+                  </span>
+                  {source.latestPublishedAt ? <span>· latest {source.latestPublishedAt.slice(0, 10)}</span> : null}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
   );
 }

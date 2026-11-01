@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { RssIcon } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ModeToggle } from "@/components/mode-toggle";
 import { NavigationProgressBar } from "@/components/navigation-progress";
 import { HeaderSlot } from "@/components/sidebar-menu";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export function SiteHeader() {
   return (
@@ -14,9 +16,10 @@ export function SiteHeader() {
           News Feed
         </Link>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" render={<Link href="/sources/" />} className="text-muted-foreground">
+          <Link href="/sources/" className={cn(buttonVariants({ variant: "outline" }))}>
+            <RssIcon data-icon="inline-start" />
             Sources
-          </Button>
+          </Link>
           <HeaderSlot />
           <ModeToggle />
         </div>
