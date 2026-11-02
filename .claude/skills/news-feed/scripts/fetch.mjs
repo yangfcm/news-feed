@@ -13,6 +13,7 @@ import { durationToSeconds, localDate, localDateTime, parseDate } from "./lib/te
 import { fetchText, mapPool } from "./lib/http.mjs";
 import { normaliseFeedEntry, parseFeed } from "./lib/feeds.mjs";
 import { loadSources } from "./lib/sources.mjs";
+import { rejectReason } from "./lib/filters.mjs";
 import { contentDir, loadEnv } from "./lib/env.mjs";
 import {
   apiKey,
@@ -21,7 +22,6 @@ import {
   listUploads,
   resolveChannelId,
   uploadsPlaylistId,
-  watchableIn,
 } from "./lib/youtube.mjs";
 
 const HOURS_DEFAULT = 24;
@@ -29,7 +29,6 @@ const HOURS_MIN = 1;
 const HOURS_MAX = 96;
 // --date spellings: YYYY-MM-DD, YYYY/MM/DD or YYYYMMDD.
 const DATE_FORMATS = [/^(\d{4})-(\d{2})-(\d{2})$/, /^(\d{4})\/(\d{2})\/(\d{2})$/, /^(\d{4})(\d{2})(\d{2})$/];
-const SHORT_MAX_SECONDS = 180; // YouTube videos this long or shorter are Shorts.
 const CONCURRENCY = 4;
 
 function parseArgs(argv) {
@@ -100,13 +99,8 @@ function resolveWindow({ hoursRaw, dateRaw }, now) {
 const inWindow = (published, window) =>
   Boolean(published) && published.getTime() >= window.from && published.getTime() < window.to;
 
-/** COUNTRY must be an ISO 3166-1 alpha-2 code; without one, region restrictions are not checked. */
-function resolveCountry(raw) {
-  const value = String(raw ?? "").trim().toUpperCase();
-  if (/^[A-Z]{2}$/.test(value)) return { country: value, note: null };
-  const problem = value ? `COUNTRY ${JSON.stringify(String(raw))} is not a two-letter country code` : "COUNTRY is not set";
-  return { country: null, note: `${problem}; region-restricted YouTube videos are not filtered out` };
-}
+/** Entries dropped, by reason: a filter rule from source.json, or a missing title or link. */
+const emptyCounts = () => ({ duration: 0, region: 0, title: 0, missingFields: 0 });
 
 function makeEntry(source, fields, published) {
   return {
@@ -130,30 +124,32 @@ function makeEntry(source, fields, published) {
 async function collectFeed(source, window) {
   const { entries: raws, channelImage } = parseFeed(await fetchText(source.link));
   const entries = [];
-  let missingFields = 0;
+  const filtered = emptyCounts();
   for (const raw of raws) {
     const published = parseDate(raw.published);
     if (!inWindow(published, window)) continue;
     const fields = normaliseFeedEntry(raw, channelImage);
     if (!fields.title || !fields.link) {
-      missingFields += 1;
+      filtered.missingFields += 1;
       continue;
     }
-    entries.push(
-      makeEntry(source, { ...fields, duration: durationToSeconds(fields.rawDuration), videoId: null }, published)
-    );
+    const duration = durationToSeconds(fields.rawDuration);
+    const reason = rejectReason({ title: fields.title, duration }, source.filters);
+    if (reason) {
+      filtered[reason] += 1;
+      continue;
+    }
+    entries.push(makeEntry(source, { ...fields, duration, videoId: null }, published));
   }
-  return { entries, missingFields, shorts: 0, regionRestricted: 0 };
+  return { entries, filtered };
 }
 
 /**
  * YouTube sources together: each channel's uploads are listed separately, then every
  * video id from every channel is fetched in one batched videos.list call.
  */
-async function collectYouTube(sources, window, country) {
-  const results = new Map(
-    sources.map((s) => [s, { entries: [], missingFields: 0, shorts: 0, regionRestricted: 0, error: null }])
-  );
+async function collectYouTube(sources, window) {
+  const results = new Map(sources.map((s) => [s, { entries: [], filtered: emptyCounts(), error: null }]));
   if (!sources.length) return results;
 
   let key;
@@ -207,20 +203,15 @@ async function collectYouTube(sources, window, country) {
       const published = parseDate(snippet.publishedAt);
       if (!inWindow(published, window)) continue;
 
-      const duration = durationToSeconds(video.contentDetails?.duration);
-      // Unknown duration (live or upcoming) is kept rather than guessed away.
-      if (duration !== null && duration <= SHORT_MAX_SECONDS) {
-        bucket.shorts += 1;
-        continue;
-      }
-      // A video limited to a list of countries that leaves ours out cannot be watched here.
-      if (country && !watchableIn(video, country)) {
-        bucket.regionRestricted += 1;
-        continue;
-      }
       const title = String(snippet.title || "").trim();
       if (!title) {
-        bucket.missingFields += 1;
+        bucket.filtered.missingFields += 1;
+        continue;
+      }
+      const duration = durationToSeconds(video.contentDetails?.duration);
+      const reason = rejectReason({ title, duration, video }, source.filters);
+      if (reason) {
+        bucket.filtered[reason] += 1;
         continue;
       }
       bucket.entries.push(
@@ -250,8 +241,6 @@ async function main() {
   const now = new Date();
   const window = resolveWindow(args, now);
   for (const note of window.notes) console.error(`warning: ${note}`);
-  const { country, note: countryNote } = resolveCountry(process.env.COUNTRY);
-  if (countryNote) console.error(`warning: ${countryNote}`);
 
   const { sources, warnings } = loadSources(sourcePath);
   for (const w of warnings) console.error(`warning: ${w}`);
@@ -264,10 +253,10 @@ async function main() {
       try {
         return { source, ...(await collectFeed(source, window)) };
       } catch (err) {
-        return { source, entries: [], missingFields: 0, shorts: 0, regionRestricted: 0, error: err.message };
+        return { source, entries: [], filtered: emptyCounts(), error: err.message };
       }
     }),
-    collectYouTube(youtubeSources, window, country),
+    collectYouTube(youtubeSources, window),
   ]);
 
   const bySource = new Map(feedResults.map((r) => [r.source, r]));
@@ -278,32 +267,23 @@ async function main() {
     // Exactly one of these is set: the hours window, or the single day fetched.
     windowHours: window.hours,
     targetDate: window.date,
-    country,
     sourceFile: sourcePath,
     sources: [],
     entries: [],
     errors: [],
     warnings,
-    filtered: { shorts: 0, regionRestricted: 0, missingFields: 0 },
+    filtered: emptyCounts(),
   };
 
   for (const source of sources) {
-    const result = bySource.get(source) ?? {
-      entries: [],
-      shorts: 0,
-      regionRestricted: 0,
-      missingFields: 0,
-      error: "not fetched",
-    };
+    const result = bySource.get(source) ?? { entries: [], filtered: emptyCounts(), error: "not fetched" };
     if (result.error) {
       out.errors.push({ source: source.title, type: source.type, link: source.link, error: result.error });
       continue;
     }
     out.sources.push({ source: source.title, type: source.type, link: source.link, count: result.entries.length });
     out.entries.push(...result.entries);
-    out.filtered.shorts += result.shorts;
-    out.filtered.regionRestricted += result.regionRestricted;
-    out.filtered.missingFields += result.missingFields;
+    for (const [reason, n] of Object.entries(result.filtered)) out.filtered[reason] += n;
   }
 
   out.entries.sort((a, b) => (a.publishedAt < b.publishedAt ? 1 : a.publishedAt > b.publishedAt ? -1 : 0));

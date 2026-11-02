@@ -3,6 +3,7 @@
 // instead of throwing.
 
 import { readFileSync } from "node:fs";
+import { mergeFilters, parseFilters } from "./filters.mjs";
 
 /** Types we know how to fetch. Anything else is treated as a plain RSS/Atom feed. */
 const KNOWN = { podcast: "feed", blog: "feed", youtube: "youtube" };
@@ -41,6 +42,16 @@ export function loadSources(path) {
   const warnings = [];
   const seen = new Set();
 
+  // Type defaults, keyed by lowercased type so they match an item's type in any case.
+  const typeFilters = {};
+  if (doc.filters != null && (typeof doc.filters !== "object" || Array.isArray(doc.filters))) {
+    warnings.push(`filters is not an object; ignored`);
+  } else {
+    for (const [type, raw] of Object.entries(doc.filters ?? {})) {
+      typeFilters[type.trim().toLowerCase()] = parseFilters(raw, `filters.${type}`, warnings);
+    }
+  }
+
   items.forEach((item, index) => {
     const link = typeof item?.link === "string" ? item.link.trim() : "";
     if (!link) {
@@ -62,14 +73,24 @@ export function loadSources(path) {
       );
     }
 
+    const title = (typeof item?.title === "string" && item.title.trim()) || hostOf(link);
+    const filters = mergeFilters(
+      typeFilters[declaredType.toLowerCase()],
+      parseFilters(item?.filters, `items[${index}].filters`, warnings)
+    );
+    if (filters.availableInCountry && kind !== "youtube") {
+      warnings.push(`items[${index}] (${title}) is not a YouTube source; availableInCountry has no effect`);
+    }
+
     sources.push({
       // `type` keeps the file's own spelling so it shows up verbatim in the output and index.
       type: declaredType || "Unknown",
       kind: kind || "feed",
-      title: (typeof item?.title === "string" && item.title.trim()) || hostOf(link),
+      title,
       link,
       category: asArray(item?.category),
       sourceLink: typeof item?.sourceLink === "string" ? item.sourceLink.trim() : "",
+      filters,
       order: index,
     });
   });

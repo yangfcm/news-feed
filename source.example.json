@@ -1,5 +1,8 @@
 {
-  "version": 1,
+  "version": 2,
+  "filters": {
+    "YouTube": { "minDuration": 181, "availableInCountry": "AU" }
+  },
   "items": [
     {
       "title": "ABC News Daily",

@@ -45,17 +45,15 @@ Pass the argument on as is: if it is 8 digits or contains `-` or `/`, as `--date
 - `--date` accepts `YYYY-MM-DD`, `YYYY/MM/DD` or `YYYYMMDD`. A malformed date, an impossible one (`2026-02-30`) or one after today falls back to the last 24 hours, and the script says so on stderr. Pass that warning on in your report.
 - Feeds only list their most recent items, so for an older date a podcast or blog may no longer carry what it published then; that is not an error. YouTube uploads are paged back at most 10 pages (500 videos) per channel. If the date is still not reached, that channel simply has no entries for it — not an error — and the script notes it on stderr; mention it in the report.
 
-`COUNTRY` (see the last section) sets the country used to drop region-restricted YouTube videos. When it is missing or not a two-letter code, nothing is dropped for region and the script says so on stderr. Pass that warning on in your report.
-
 `raw.json` contains:
 
-- `generatedAt`, `windowHours` (the hours used, or `null` for a date), `targetDate` (the date fetched as `YYYY-MM-DD`, or `null` for an hours window), `country` (the code used, or `null`), `sourceFile`, `entryCount`
+- `generatedAt`, `windowHours` (the hours used, or `null` for a date), `targetDate` (the date fetched as `YYYY-MM-DD`, or `null` for an hours window), `sourceFile`, `entryCount`
 - `dates`: the distinct publish dates (`YYYY-MM-DD`, local) of the entries, newest first — the day files Step 3 will write into.
 - `entries`: newest first. Each one already has every field the output needs except `summary` and `tags`, which are empty for you to fill in. `description` is the feed's own text, cleaned to plain text — it is your raw material and is **not** part of the final output.
 - `sources`: every source that was fetched, with its entry count.
 - `errors`: sources that could not be fetched, each with the reason. Do not stop the run for these.
-- `warnings`: problems in `source.json` itself (missing link, duplicate link, unknown type).
-- `filtered`: how many entries were dropped as Shorts (`shorts`), as YouTube videos not available in `country` (`regionRestricted`), or for missing a title or link (`missingFields`).
+- `warnings`: problems in `source.json` itself (missing link, duplicate link, unknown type, a filter rule that cannot be read).
+- `filtered`: how many entries the filters in `source.json` dropped, by rule: `duration` (`minDuration` / `maxDuration`), `region` (`availableInCountry`), `title` (`excludeTitle` / `includeTitle`); plus `missingFields`, entries with no title or link.
 
 Never add a dropped video back, by hand or otherwise. It must not appear in the JSON or the Markdown note.
 
@@ -244,7 +242,7 @@ Tell the user:
 - whether the site build succeeded (`web/out/`), or the error it failed with
 - whether the content was pushed (with the commit), skipped (and why), or failed to push (with the error)
 - the entry count per source, grouped by type
-- how many Shorts were filtered out, and how many region-restricted videos (with the `country` used, or the warning that it was not set)
+- how many entries were filtered out, by reason (`duration`, `region`, `title`)
 - every source in `errors`, with its reason, and every `source.json` warning
 
 ## What the scripts do, so you can read their output
@@ -252,10 +250,12 @@ Tell the user:
 - Each source gets 20 seconds; on any failure it waits 10 seconds and retries once, and only a second failure counts as an error. That source is then skipped and the rest of the run continues.
 - Sources are fetched concurrently (4 at a time), so one slow source does not hold up the others.
 - YouTube: the `@handle` page gives the `UC…` channel id, whose uploads playlist is the same id with `UC` swapped for `UU`. `playlistItems` lists the newest uploads, then **one batched `videos` call covers every channel at once**. Publish times come from `videos`, because `playlistItems` reports when a video joined the playlist rather than when it went out.
-- A YouTube video of **180 seconds or less is a Short and is dropped**. A video whose duration is unknown — live or upcoming — is kept rather than guessed away.
-- A YouTube video that cannot be watched in `COUNTRY` is dropped: its `contentDetails.regionRestriction.allowed` list **does not include** `COUNTRY`, or its `regionRestriction.blocked` list **includes** it. A video with neither list is kept.
+- Filters come from `source.json`: the top-level `filters` holds defaults per type (matched to an item's `type` in any case), and an item's own `filters` replaces them rule by rule; a rule set to `null` turns the default off for that item. An entry is dropped when:
+  - `minDuration` / `maxDuration`: its duration in seconds is below / above the value. A duration that is unknown — a live or upcoming video, a podcast without `itunes:duration` — is kept rather than guessed away. Shorts are dropped by a YouTube default of `minDuration: 181`.
+  - `availableInCountry`: it is a YouTube video that cannot be watched in that country (a two-letter code): its `contentDetails.regionRestriction.allowed` list **does not include** it, or its `regionRestriction.blocked` list **includes** it. A video with neither list is kept. On other types the rule has no effect.
+  - `excludeTitle` / `includeTitle`: its title matches any of the regexes / none of them, ignoring case.
+  - An unknown rule, a value of the wrong kind or an invalid regex is ignored with a warning.
 - An entry with no title or no link is dropped.
 - Podcast `duration` comes from `itunes:duration`, which may be seconds, `MM:SS` or `H:MM:SS`; all spellings are normalised to seconds.
 - All dates are local time. `publishedAt` is `YYYY-MM-DD HH:mm` and sorts correctly as plain text.
 - `YT_API_KEY` is read from the environment, or from `.env` at the project root. Without it, only the YouTube sources fail; podcasts and blogs still produce a digest.
-- `COUNTRY` is read the same way: the ISO 3166-1 alpha-2 code of the country the digest is watched from, such as `AU`. Case does not matter.
