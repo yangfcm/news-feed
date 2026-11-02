@@ -4,7 +4,7 @@ import { PageShell } from "@/components/page-shell";
 import { SourceList } from "@/components/source-list";
 import { SourceView } from "@/components/source-view";
 import { Card, CardContent } from "@/components/ui/card";
-import { getAvailableDates, getSource, getSourceIndex, withEncodedSlugs } from "@/lib/data";
+import { getSource, getSourceIndex, withEncodedSlugs } from "@/lib/data";
 
 // Only the sources in the index exist; a static export cannot render others on demand.
 export const dynamicParams = false;
@@ -28,7 +28,6 @@ export default async function SourcePage({ params }: PageProps<"/source/[slug]">
   const slug = decodeURIComponent((await params).slug);
   const source = getSource(slug);
   const sources = getSourceIndex().sources;
-  const dates = getAvailableDates();
 
   if (!source) {
     return (
@@ -50,7 +49,7 @@ export default async function SourcePage({ params }: PageProps<"/source/[slug]">
 
   return (
     <PageShell sidebar={<SourceList sources={sources} selected={slug} />}>
-      <SourceView source={source} dates={dates} />
+      <SourceView source={source} />
     </PageShell>
   );
 }

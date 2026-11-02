@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { PlayIcon } from "lucide-react";
 import { useState } from "react";
+import { youtubePoster } from "@/lib/format";
 
 /**
  * Shows the thumbnail until clicked, then swaps in the embedded player, so a day with a
@@ -20,7 +21,7 @@ export function YouTubePlayer({
   loading?: "eager" | "lazy";
 }) {
   const [playing, setPlaying] = useState(false);
-  const poster = thumbnail || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+  const poster = thumbnail || youtubePoster(videoId);
 
   return (
     <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">

@@ -1,10 +1,11 @@
 import { DateCalendar } from "@/components/date-calendar";
-import { SidebarMenu } from "@/components/sidebar-menu";
+import { SidebarProvider } from "@/components/sidebar-menu";
 
 /**
  * The two-column layout every page shares: content on the left, calendar (and sidebar) on
- * the right. On narrower screens the sidebar opens from a header button instead. Without
- * `dates` there is no calendar, and without either the page is a single column.
+ * the right. On narrower screens the sidebar opens from a button in the page's heading
+ * instead (SidebarMenu). Without `dates` there is no calendar, and without either the page
+ * is a single column.
  */
 export function PageShell({
   dates,
@@ -35,10 +36,11 @@ export function PageShell({
 
   return (
     <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-8 lg:grid-cols-[minmax(0,1fr)_320px]">
-      <main className="min-w-0">{children}</main>
+      <main className="min-w-0">
+        <SidebarProvider sidebar={sidebarContent}>{children}</SidebarProvider>
+      </main>
       {/* Not sticky: the filters can be taller than the viewport and should scroll with the page. */}
       <aside className="hidden flex-col gap-6 lg:flex lg:self-start">{sidebarContent}</aside>
-      <SidebarMenu>{sidebarContent}</SidebarMenu>
     </div>
   );
 }

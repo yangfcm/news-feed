@@ -3,7 +3,6 @@ import { RssIcon } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ModeToggle } from "@/components/mode-toggle";
 import { NavigationProgressBar } from "@/components/navigation-progress";
-import { HeaderSlot } from "@/components/sidebar-menu";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -27,7 +26,6 @@ export function SiteHeader() {
             <RssIcon data-icon="inline-start" />
             <span className="hidden xs:inline">Sources</span>
           </Link>
-          <HeaderSlot />
           <ModeToggle />
         </div>
       </div>

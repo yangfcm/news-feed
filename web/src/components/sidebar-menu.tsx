@@ -1,32 +1,29 @@
 "use client";
 
 import { SlidersHorizontalIcon } from "lucide-react";
-import { useSyncExternalStore } from "react";
-import { createPortal } from "react-dom";
+import { createContext, useContext } from "react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-const SLOT_ID = "header-slot";
 const LABEL = "Calendar and filters";
 
-/** Where a page's own header controls go, left of the theme toggle. */
-export function HeaderSlot() {
-  return <div id={SLOT_ID} className="contents" />;
+const SidebarContext = createContext<React.ReactNode>(null);
+
+/** Makes the page's sidebar available to SidebarMenu, wherever the page's heading puts it. */
+export function SidebarProvider({ sidebar, children }: { sidebar: React.ReactNode; children: React.ReactNode }) {
+  return <SidebarContext value={sidebar}>{children}</SidebarContext>;
 }
 
-const subscribe = () => () => {};
-
 /**
- * Below the lg breakpoint the sidebar is hidden, so it opens from a header button instead.
- * Portalled from the page, so the popover keeps the page's filter state.
+ * Below the lg breakpoint the sidebar is hidden, so it opens from a button in the page's
+ * heading instead. Nothing is rendered on pages without a sidebar.
  */
-export function SidebarMenu({ children }: { children: React.ReactNode }) {
-  // The header is in the root layout, so the slot exists once the page hydrates.
-  const slot = useSyncExternalStore(subscribe, () => document.getElementById(SLOT_ID), () => null);
-  if (!slot) return null;
+export function SidebarMenu() {
+  const sidebar = useContext(SidebarContext);
+  if (!sidebar) return null;
 
-  return createPortal(
+  return (
     <Popover>
       <Tooltip>
         <TooltipTrigger
@@ -48,9 +45,8 @@ export function SidebarMenu({ children }: { children: React.ReactNode }) {
         align="end"
         className="max-h-(--available-height) w-[min(22rem,calc(100vw-2rem))] gap-4 overflow-y-auto p-3 *:shrink-0 lg:hidden"
       >
-        {children}
+        {sidebar}
       </PopoverContent>
-    </Popover>,
-    slot,
+    </Popover>
   );
 }

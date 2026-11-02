@@ -1,7 +1,7 @@
 import { DayHeading } from "@/components/day-heading";
-import { EntryCard } from "@/components/entry-card";
-import { EntryCount, FilteredEntry } from "@/components/entry-filters";
-import { entryKey } from "@/lib/filters";
+import { EntryCount } from "@/components/entry-filters";
+import { EntryViews } from "@/components/entry-views";
+import { ViewSwitcher } from "@/components/view-switcher";
 import type { Day } from "@/lib/types";
 
 /** A day's digest, in the same order as its Markdown note. Must be inside EntryFilterProvider. */
@@ -26,17 +26,11 @@ export function DayView({
 
   return (
     <>
-      <DayHeading date={day.date} dates={dates} badge={<EntryCount />}>
+      <DayHeading date={day.date} dates={dates} badge={<EntryCount />} actions={<ViewSwitcher scope="date" />}>
         Updated At {day.updatedAt}
       </DayHeading>
-      <div className="flex flex-col gap-6">
-        {/* The first cards are above the fold on any viewport, so their images load eagerly. */}
-        {day.entries.map((entry, i) => (
-          <FilteredEntry key={entryKey(entry)} id={entryKey(entry)}>
-            <EntryCard entry={entry} eager={i < 2} sourceHref={sourceHrefs[entry.source]} />
-          </FilteredEntry>
-        ))}
-      </div>
+      {/* The first cards are above the fold on any viewport, so their images load eagerly. */}
+      <EntryViews scope="date" entries={day.entries} sourceHrefs={sourceHrefs} eager={2} filtered />
     </>
   );
 }
