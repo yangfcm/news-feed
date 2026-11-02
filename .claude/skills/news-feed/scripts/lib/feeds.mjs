@@ -44,10 +44,19 @@ function atomLink(entry) {
   return String(pick?.["@href"] ?? "");
 }
 
+/** media:content can be audio or video too; only an image one is a thumbnail. */
+function mediaImage(nodes) {
+  const list = Array.isArray(nodes) ? nodes : nodes ? [nodes] : [];
+  const img = list.find(
+    (m) => typeof m === "object" && (m["@medium"] === "image" || String(m["@type"] ?? "").startsWith("image/"))
+  );
+  return String(img?.["@url"] ?? "");
+}
+
 function mediaThumb(node) {
   return firstTruthy(
     attr(node["media:thumbnail"], "url"),
-    attr(node["media:content"], "url"),
+    mediaImage(node["media:content"]),
     attr(node["itunes:image"], "href"),
     text(node["image"]?.url)
   );
