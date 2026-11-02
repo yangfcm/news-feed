@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { themeScript } from "@/lib/theme";
+import { themeColorScript } from "@/lib/theme-color";
 import { viewScript } from "@/lib/view";
 import "./globals.css";
 
@@ -25,10 +26,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    // themeScript and viewScript set the theme class and view attributes on <html> before hydration.
+    // themeScript, themeColorScript and viewScript set the theme class, theme color and view attributes on <html> before hydration.
     <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script dangerouslySetInnerHTML={{ __html: themeColorScript }} />
         <script dangerouslySetInnerHTML={{ __html: viewScript }} />
       </head>
       <body className="flex min-h-full flex-col">

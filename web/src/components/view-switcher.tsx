@@ -52,7 +52,7 @@ export function ViewSwitcher({ scope }: { scope: ViewScope }) {
                     variant={selected ? "default" : "outline"}
                     aria-pressed={selected}
                     aria-label={label}
-                    className="cursor-pointer"
+                    className="brand cursor-pointer"
                   />
                 }
                 onClick={() => setView(scope, option)}

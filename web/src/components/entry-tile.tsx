@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ExternalLinkIcon } from "lucide-react";
 import { EntryDialog } from "@/components/entry-dialog";
-import { Badge } from "@/components/ui/badge";
+import { EntryTypeIcon } from "@/components/entry-type-icon";
 import { Card, CardContent } from "@/components/ui/card";
 import { DialogTrigger } from "@/components/ui/dialog";
 import { formatDuration, youtubePoster } from "@/lib/format";
@@ -44,7 +44,6 @@ export function EntryTile({
           )}
         </DialogTrigger>
         <CardContent className="flex flex-1 flex-col gap-2">
-          <Badge className="self-start">{entry.type}</Badge>
           <div className="flex items-start gap-1.5 leading-snug">
             <h2 className="line-clamp-3 min-w-0 flex-1 font-medium">
               <DialogTrigger
@@ -67,13 +66,16 @@ export function EntryTile({
             </a>
           </div>
           <div className="mt-auto flex flex-col gap-0.5 text-xs text-muted-foreground">
-            {sourceHref ? (
-              <Link href={sourceHref} className="truncate underline-offset-4 hover:text-foreground hover:underline">
-                {entry.source}
-              </Link>
-            ) : (
-              <span className="truncate">{entry.source}</span>
-            )}
+            <span className="flex min-w-0 items-center gap-1">
+              <EntryTypeIcon type={entry.type} className="size-3" />
+              {sourceHref ? (
+                <Link href={sourceHref} className="truncate underline-offset-4 hover:text-foreground hover:underline">
+                  {entry.source}
+                </Link>
+              ) : (
+                <span className="truncate">{entry.source}</span>
+              )}
+            </span>
             <span>
               {entry.publishedAt}
               {entry.duration ? ` · ${formatDuration(entry.duration)}` : null}

@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ExternalLinkIcon } from "lucide-react";
 import { AudioPlayer } from "@/components/audio-player";
+import { EntryTypeIcon } from "@/components/entry-type-icon";
 import { YouTubePlayer } from "@/components/youtube-player";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,6 +33,9 @@ export function EntryCard({
   const fields = (
     <dl className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5 text-sm">
       <Field label="Source">
+        <span className="mr-1 inline-flex h-[1lh] items-center align-top">
+          <EntryTypeIcon type={entry.type} />
+        </span>
         {sourceHref ? (
           <Link href={sourceHref} className="underline-offset-4 hover:underline">
             {entry.source}
@@ -84,10 +88,6 @@ export function EntryCard({
       <CardHeader>
         <CardTitle className="text-lg leading-snug">
           <h2>
-            {/* Centred on the first line of the title, like the link icon after it. */}
-            <span className="mr-1.5 inline-flex h-[1lh] items-center align-top">
-              <Badge>{entry.type}</Badge>
-            </span>
             {entry.title}
             <a
               href={entry.link}

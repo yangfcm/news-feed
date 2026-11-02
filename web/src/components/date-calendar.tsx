@@ -41,7 +41,7 @@ export function DateCalendar({
         startProgress(href);
         router.push(href);
       }}
-      className="w-full rounded-lg border [--cell-size:--spacing(9)]"
+      className="brand w-full rounded-lg border [--cell-size:--spacing(9)]"
       classNames={{ root: "w-full" }}
     />
   );

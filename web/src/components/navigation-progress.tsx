@@ -74,8 +74,8 @@ export function NavigationProgressBar() {
       aria-hidden="true"
       className={
         context.status === "loading"
-          ? "absolute inset-x-0 -bottom-px h-0.5 origin-left animate-nav-progress bg-blue-500 dark:bg-blue-400"
-          : "absolute inset-x-0 -bottom-px h-0.5 origin-left animate-nav-progress-done bg-blue-500 dark:bg-blue-400"
+          ? "absolute inset-x-0 -bottom-px h-0.5 origin-left animate-nav-progress bg-brand-progress"
+          : "absolute inset-x-0 -bottom-px h-0.5 origin-left animate-nav-progress-done bg-brand-progress"
       }
       onAnimationStart={context.status === "loading" ? context.onShown : undefined}
       onAnimationEnd={context.status === "done" ? context.onDone : undefined}
