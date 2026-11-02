@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ExternalLinkIcon } from "lucide-react";
 import { EntryDialog } from "@/components/entry-dialog";
-import { Badge } from "@/components/ui/badge";
+import { EntryTypeIcon } from "@/components/entry-type-icon";
 import { DialogTrigger } from "@/components/ui/dialog";
 import { formatDuration } from "@/lib/format";
 import type { Entry } from "@/lib/types";
@@ -11,9 +11,6 @@ export function EntryRow({ entry, sourceHref }: { entry: Entry; sourceHref?: str
   return (
     <div className="flex flex-col gap-1 bg-card px-4 py-3">
       <h2 className="font-medium leading-snug">
-        <span className="mr-1.5 inline-flex h-[1lh] items-center align-top">
-          <Badge>{entry.type}</Badge>
-        </span>
         <EntryDialog entry={entry} sourceHref={sourceHref}>
           {/* A span, not a button, so a long title wraps inline and the link icon follows its last line. */}
           <DialogTrigger
@@ -36,13 +33,16 @@ export function EntryRow({ entry, sourceHref }: { entry: Entry; sourceHref?: str
         </a>
       </h2>
       <p className="flex flex-wrap gap-x-2 text-xs text-muted-foreground">
-        {sourceHref ? (
-          <Link href={sourceHref} className="underline-offset-4 hover:text-foreground hover:underline">
-            {entry.source}
-          </Link>
-        ) : (
-          <span>{entry.source}</span>
-        )}
+        <span className="inline-flex items-center gap-1">
+          <EntryTypeIcon type={entry.type} className="size-3" />
+          {sourceHref ? (
+            <Link href={sourceHref} className="underline-offset-4 hover:text-foreground hover:underline">
+              {entry.source}
+            </Link>
+          ) : (
+            entry.source
+          )}
+        </span>
         <span>· {entry.publishedAt}</span>
         {entry.duration ? <span>· {formatDuration(entry.duration)}</span> : null}
       </p>

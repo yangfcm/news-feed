@@ -1,10 +1,9 @@
 import Link from "next/link";
-import { RssIcon } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ModeToggle } from "@/components/mode-toggle";
 import { NavigationProgressBar } from "@/components/navigation-progress";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { SourcesLink } from "@/components/sources-link";
+import { ThemeColorPicker } from "@/components/theme-color-picker";
 
 export function SiteHeader() {
   return (
@@ -15,17 +14,8 @@ export function SiteHeader() {
           News Feed
         </Link>
         <div className="flex items-center gap-2">
-          <Link
-            href="/sources/"
-            aria-label="Sources"
-            className={cn(
-              buttonVariants({ variant: "outline" }),
-              "max-xs:w-8 max-xs:px-0 max-xs:has-data-[icon=inline-start]:pl-0",
-            )}
-          >
-            <RssIcon data-icon="inline-start" />
-            <span className="hidden xs:inline">Sources</span>
-          </Link>
+          <SourcesLink />
+          <ThemeColorPicker />
           <ModeToggle />
         </div>
       </div>

@@ -99,7 +99,7 @@ export function EntryFilters() {
                       aria-pressed={selected}
                       onClick={() => toggle(key, value)}
                       className={cn(
-                        "cursor-pointer disabled:pointer-events-none disabled:opacity-40",
+                        "brand cursor-pointer disabled:pointer-events-none disabled:opacity-40",
                         !selected && "hover:border-transparent hover:bg-primary hover:text-primary-foreground",
                       )}
                     >
