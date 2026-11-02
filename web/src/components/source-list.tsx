@@ -53,13 +53,13 @@ export function SourceList({
 export function SourceDirectory({ sources }: { sources: SourceSummary[] }) {
   return (
     <Card className="py-0">
-      <CardContent>
+      <CardContent className="px-0">
         <ul className="divide-y">
           {sources.map((source) => (
             <li key={source.slug}>
               <Link
                 href={sourceHref(source.slug)}
-                className="flex flex-wrap items-center gap-x-4 gap-y-1 py-3 transition-colors hover:text-primary"
+                className="group flex flex-wrap items-center gap-x-4 gap-y-1 px-(--card-spacing) py-3 transition-colors hover:bg-muted"
               >
                 <span className="flex min-w-0 flex-1 items-center gap-2 font-medium">
                   {source.type ? <EntryTypeIcon type={source.type} className="size-4" /> : null}
@@ -70,7 +70,7 @@ export function SourceDirectory({ sources }: { sources: SourceSummary[] }) {
                     <Badge
                       key={c}
                       variant="secondary"
-                      className="hidden sm:inline-flex"
+                      className="hidden group-hover:bg-background sm:inline-flex"
                     >
                       {c}
                     </Badge>
