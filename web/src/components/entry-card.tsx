@@ -112,7 +112,7 @@ export function EntryCard({
           <div className="flex gap-4">
             {entry.thumbnail ? (
               <div className="relative size-20 shrink-0 overflow-hidden rounded-md bg-muted sm:size-24">
-                <Image src={entry.thumbnail} alt="" fill sizes="96px" loading={loading} className="object-cover" />
+                <Image src={entry.thumbnail} alt="" fill sizes="96px" loading={loading} className="object-contain" />
               </div>
             ) : null}
             {fields}
