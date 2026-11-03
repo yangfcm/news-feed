@@ -21,8 +21,11 @@ const NAMES: Record<ThemeColor, string> = {
   default: "Default",
   red: "Red",
   orange: "Orange",
-  blue: "Blue",
+  yellow: "Yellow",
   green: "Green",
+  blue: "Blue",
+  indigo: "Indigo",
+  violet: "Violet",
 };
 
 export function ThemeColorPicker() {

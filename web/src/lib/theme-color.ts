@@ -1,4 +1,4 @@
-export const THEME_COLORS = ["default", "red", "orange", "blue", "green"] as const;
+export const THEME_COLORS = ["default", "red", "orange", "yellow", "green", "blue", "indigo", "violet"] as const;
 
 export type ThemeColor = (typeof THEME_COLORS)[number];
 
