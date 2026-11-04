@@ -47,7 +47,7 @@ export function DayHeading({
   const next = dates.findLast((d) => d > date);
 
   return (
-    <div className="mb-6 flex flex-col gap-2">
+    <div className="sticky top-14 z-30 -mt-3 mb-3 flex flex-col gap-2 bg-background/95 py-3 backdrop-blur supports-backdrop-filter:bg-background/80">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <DayLink date={previous} label="Previous Date">

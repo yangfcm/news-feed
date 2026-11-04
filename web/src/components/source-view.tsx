@@ -12,7 +12,7 @@ export function SourceView({ source }: { source: Source }) {
 
   return (
     <>
-      <div className="mb-6 flex flex-col gap-2">
+      <div className="sticky top-14 z-30 -mt-3 mb-3 flex flex-col gap-2 bg-background/95 py-3 backdrop-blur supports-backdrop-filter:bg-background/80">
         <div className="flex items-start justify-between gap-4">
           <h1 className="min-w-0 text-3xl font-semibold tracking-tight">
             {source.name}

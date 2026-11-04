@@ -100,7 +100,9 @@ export function EntryFilters() {
                       onClick={() => toggle(key, value)}
                       className={cn(
                         "brand cursor-pointer disabled:pointer-events-none disabled:opacity-40",
-                        !selected && "hover:border-transparent hover:bg-primary hover:text-primary-foreground",
+                        selected
+                          ? "hover:bg-primary/80"
+                          : "bg-background hover:bg-muted hover:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
                       )}
                     >
                       {value}

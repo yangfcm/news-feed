@@ -39,8 +39,10 @@ export function PageShell({
       <main className="min-w-0">
         <SidebarProvider sidebar={sidebarContent}>{children}</SidebarProvider>
       </main>
-      {/* Not sticky: the filters can be taller than the viewport and should scroll with the page. */}
-      <aside className="hidden flex-col gap-6 lg:flex lg:self-start">{sidebarContent}</aside>
+      {/* Scrolls on its own when taller than the viewport; `*:shrink-0` as in SidebarMenu, `-m-px p-px` keeps the cards' rings unclipped. */}
+      <aside className="sticky top-22 -m-px hidden max-h-[calc(100dvh-7.5rem)] flex-col gap-6 self-start overflow-y-auto p-px *:shrink-0 lg:flex">
+        {sidebarContent}
+      </aside>
     </div>
   );
 }
