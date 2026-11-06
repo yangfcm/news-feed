@@ -90,7 +90,9 @@ Write the result to `<scratchpad>/enriched.json`: the same structure as `raw.jso
 node .claude/skills/news-feed/scripts/write.mjs <scratchpad>/enriched.json
 ```
 
-Each entry goes into the files of its publish date — the local date at the start of its `publishedAt`. For every date that gains, loses or changes an entry, the script writes the two day files below. The **run date's** day file — `targetDate` for a date fetch, else today's local date — is always written, even when it ends up with no entries, because it is the one that records this run's fetch errors. Then it rebuilds `index.json`, and the source files under `sources/`. A `publishedAt` in the future — a podcast scheduled ahead — goes into that future date's file.
+Each entry goes into the files of its publish date — the local date at the start of its `publishedAt`. For every date that gains, loses or changes an entry, the script writes the two day files below. The **run date's** day file — `targetDate` for a date fetch, else today's local date — is always written, even when it ends up with no entries, because it is the one that records this run's fetch errors. Then it updates `index.json` and the source files under `sources/`. A `publishedAt` in the future — a podcast scheduled ahead — goes into that future date's file.
+
+The script reads only the day files this run can change: the run date's, the one for each entry's publish date, and the one an entry is already filed under when that is a different date. The source files of the fetched sources tell it the last. The other day files are not opened, so a run takes about as long on a year of digests as on a week. Add `--full` to read every day file and rebuild `index.json` and every source file from them instead. Use it to repair the data after editing a day file by hand. It also happens on its own when `index.json` or `sources/index.json` is missing.
 
 **`<Year>/<Month>/<YYYY-MM-DD>.json`**
 
@@ -143,9 +145,9 @@ Each entry goes into the files of its publish date — the local date at the sta
 
 `path` is relative to `content/data/`. There is no index of the entries themselves: the website filters each day's entries on that day's page.
 
-`index.json` is rebuilt from the day files on every run, so a day file edited or deleted by hand is reflected in it on the next run.
+`index.json` is updated from the previous one and the day files this run wrote. The script also lists the day files on disk, so a day file added or deleted by hand is reflected in it on the next run. When that happens, the source files are rebuilt from every day file, because the script can't tell which entries the change added or removed. A day file **edited** by hand is not noticed until a run touches that day, or a run with `--full`.
 
-**`sources/<slug>.json`** — everything one source has published, newest first, so the website can show a source's page without reading every day file. The day files are the record of what was collected; the source files are derived from them, from every entry on disk after the day files are written, and never from an earlier source file. One is written for every source that has an entry in any day file, and for every source in `source.json`, even with no entries yet:
+**`sources/<slug>.json`** — everything one source has published, newest first, so the website can show a source's page without reading every day file. The day files are the record of what was collected, and the source files are derived from them. A run updates a source file from the day files it read: the source keeps the entries in its file that were not in those days, and takes its entries in those days as they are now. A run with `--full` builds every source file from every entry on disk instead; both give the same result. There is a source file for every source that has an entry in any day file, and for every source in `source.json`, even with no entries yet:
 
 ```json
 {
@@ -160,7 +162,9 @@ Each entry goes into the files of its publish date — the local date at the sta
 }
 ```
 
-A source is identified by its name, the `source` of its entries. `type`, `category` and `sourceLink` come from its item in `source.json`, or from its newest entry when it is not listed there. `slug` is the URL segment of the source's page on the website and the file's name: lower-case letters and digits in any script (so a Chinese name keeps its characters), with every other run of characters replaced by one hyphen, and a number appended when two names give the same slug. A source keeps the slug its file already has, so its URL never changes. Like a day file, a source file is only rewritten when its content changed, `updatedAt` included; one whose source has no entries left and is no longer in `source.json` is deleted.
+A source is identified by its name, the `source` of its entries. `type`, `category` and `sourceLink` come from its item in `source.json`. A source removed from `source.json` keeps the ones its file already has, and a source never listed there takes them from its newest entry. `slug` is the URL segment of the source's page on the website and the file's name: lower-case letters and digits in any script (so a Chinese name keeps its characters), with every other run of characters replaced by one hyphen, and a number appended when two names give the same slug. A source keeps the slug its file already has, so its URL never changes. Like a day file, a source file is only rewritten when its content changed, `updatedAt` included; one whose source has no entries left and is no longer in `source.json` is deleted.
+
+To decide which sources to look at, the script compares `source.json` with `sources/index.json` by name. A source listed with no row is new and gets a file. A source listed whose details differ from its row is rewritten. A source not listed whose row has no entries is deleted. Add the sources with an entry in the day files read, and every other row of `sources/index.json` is carried over without opening its file. When a source file that is needed can't be read, the script warns and rebuilds every source file from the day files.
 
 **`sources/index.json`** — the list of sources, by name, which the website builds its sources page from:
 
@@ -188,9 +192,9 @@ A source is identified by its name, the `source` of its entries. `type`, `catego
 
 ### Running more than once a day
 
-The skill is meant to run once a day, but running it again is safe and is the normal way to pick up what was published since. Fetch exactly as you would on a first run — the merge happens on write, as an upsert across **every** day file on disk:
+The skill is meant to run once a day, but running it again is safe and is the normal way to pick up what was published since. Fetch exactly as you would on a first run — the merge happens on write, as an upsert into the day files the run can change:
 
-- An entry counts as already present when its `link` matches, or its `videoId` for YouTube, in any day file.
+- An entry counts as already present when its `link` matches, or its `videoId` for YouTube, in the day file of its publish date, or in the day file its source's file says it is filed under.
 - **An entry already filed is updated** from this fetch: title, thumbnail, duration, publish time and every other fetched field take the new values.
 - **`summary` and `tags` are only replaced by non-empty values.** Left empty, the earlier ones are kept, so a summary written earlier is never lost — not even to a run without Claude (`npm run digest`). Conversely, a later skill run fills in the summaries such a run left empty.
 - **A new entry is appended.**
@@ -198,9 +202,9 @@ The skill is meant to run once a day, but running it again is safe and is the no
 - **An entry in the wrong day file is moved** to the file of its publish date — for instance after its `publishedAt` changed, or in a file written before entries were filed by publish date. A file left empty by such moves is deleted along with its note. The same item found in two day files is merged into one, keeping any summary and tags.
 - A day file whose content did not change is left exactly as it is, `updatedAt` included.
 - `updatedAt`, `entryCount` and the Markdown note of every day file written, and `index.json`, are refreshed.
-- The source files are rebuilt from the day files as they now are, so they always agree with them; a source with nothing new keeps its file as it was.
+- The source files are updated from the day files as they now are, so they always agree with them; a source with nothing new keeps its file as it was.
 
-The script prints, for every day file it wrote, its date, its JSON and Markdown paths, how many entries it added and updated and its total (`days`); the day files it removed (`removed`); how many entries it moved between days (`moved`); the totals added and updated; how many it skipped as duplicates within this run; the path of `index.json`; and under `sources`, the source files it wrote (`written`: name, slug, path and entry count of each) and removed (`removed`), the path of `sources/index.json` (`index`) and how many sources it indexed (`sourceCount`).
+The script prints how it ran (`mode`: `full`, `incremental`, or `incremental, sources rebuilt`) and how many day files it read (`daysRead`); for every day file it wrote, its date, its JSON and Markdown paths, how many entries it added and updated and its total (`days`); the day files it removed (`removed`); how many entries it moved between days (`moved`); the totals added and updated; how many it skipped as duplicates within this run; the path of `index.json`; and under `sources`, the source files it wrote (`written`: name, slug, path and entry count of each) and removed (`removed`), the path of `sources/index.json` (`index`) and how many sources it indexed (`sourceCount`).
 
 ## Step 4: Build the site
 

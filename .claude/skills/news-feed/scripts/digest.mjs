@@ -3,9 +3,9 @@
 // without Claude. The skill does not use this; it runs fetch.mjs and write.mjs itself so it
 // can write the summaries in between.
 //
-//   node digest.mjs [source.json] [--hours 24 | --date YYYY-MM-DD] [--out <dir>]
+//   node digest.mjs [source.json] [--hours 24 | --date YYYY-MM-DD] [--out <dir>] [--full]
 //
-// --out goes to write.mjs; every other argument is passed on to fetch.mjs. Each entry is
+// --out and --full go to write.mjs; every other argument is passed on to fetch.mjs. Each entry is
 // upserted into the day file of its publish date as usual, so summaries written by an
 // earlier Claude run are kept.
 
@@ -23,7 +23,8 @@ const fetchArgs = [];
 const writeArgs = [];
 const argv = process.argv.slice(2);
 for (let i = 0; i < argv.length; i += 1) {
-  if (argv[i] === "--out") writeArgs.push(argv[i], argv[++i] ?? "");
+  if (argv[i] === "--full") writeArgs.push(argv[i]);
+  else if (argv[i] === "--out") writeArgs.push(argv[i], argv[++i] ?? "");
   else if (argv[i].startsWith("--out=")) writeArgs.push(argv[i]);
   else fetchArgs.push(argv[i]);
 }
