@@ -17,11 +17,15 @@
 // so the cost of a run follows the size of the fetch, not of the archive. --full reads every
 // day file and rebuilds everything from them instead; it is also what happens when either
 // index is missing, and the source files alone are rebuilt when one that is needed can't be read.
+//
+// Last, the retention rules in source.json delete the entries each source no longer keeps,
+// from the day files and the source files alike, before the index of dates is written.
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { localDate, localDateTime, slugify } from "./lib/text.mjs";
 import { contentDir } from "./lib/env.mjs";
+import { expiredEntries, mergeRetention, parseRetention } from "./lib/retention.mjs";
 
 const ENTRY_FIELDS = [
   "title",
@@ -478,6 +482,89 @@ function updateSources(outDir, now, { rows, loadSource, readEntries, touchedEntr
   return writeSourceFiles(outDir, now, { configured, groups, previous, kept, remove });
 }
 
+/**
+ * The retention rules of a source, by name: the top-level `retention` of source.json,
+ * overridden rule by rule by the source's own. A source not listed there takes the default.
+ */
+function readRetention(warnings) {
+  const doc = readJsonIfReadable(join(contentDir(), "source.json"));
+  const defaults = parseRetention(doc?.retention, "retention", warnings);
+  const own = new Map();
+  (Array.isArray(doc?.items) ? doc.items : []).forEach((item, index) => {
+    const name = String(item?.title ?? "").trim();
+    if (name && !own.has(name)) own.set(name, parseRetention(item.retention, `items[${index}].retention`, warnings));
+  });
+  return (name) => mergeRetention(defaults, own.get(name) ?? {});
+}
+
+/**
+ * Delete the entries the retention rules no longer keep. Each source's file says which of its
+ * entries have expired, so only the source files with a rule and the day files holding an
+ * expired entry are read. A day file left with no entries is deleted with its note, except the
+ * run date's; `known` follows every day file changed. The files of the sources that lost
+ * entries are rewritten, along with the index of sources.
+ */
+function prune(outDir, now, { runDate, rulesFor, known }) {
+  const rows = readJsonIfReadable(join(sourcesDir(outDir), "index.json"))?.sources ?? [];
+  const groups = new Map();
+  const previous = new Map();
+  const kept = [];
+  const bySource = [];
+  const expiredByDate = new Map();
+  for (const row of rows) {
+    const rules = rulesFor(row.name);
+    const file = Object.keys(rules).length && row.entryCount ? readSourceFile(join(outDir, row.path)) : null;
+    const expired = file?.name === row.name ? expiredEntries(file.entries, rules, now, (e) => entryDate(e, null)) : [];
+    if (!expired.length) {
+      kept.push(row);
+      continue;
+    }
+    const keys = new Set(expired.map(entryKey));
+    for (const entry of expired) {
+      const date = entryDate(entry, null);
+      if (!expiredByDate.has(date)) expiredByDate.set(date, new Set());
+      expiredByDate.get(date).add(entryKey(entry));
+    }
+    groups.set(row.name, file.entries.filter((entry) => !keys.has(entryKey(entry))));
+    previous.set(row.name, file);
+    bySource.push({ name: row.name, removed: expired.length });
+  }
+
+  const days = [];
+  const removed = [];
+  const pathOf = new Map([...known].map(([rel, row]) => [row.date, join(outDir, rel)]));
+  for (const [date, keys] of [...expiredByDate].sort()) {
+    const day = readDayFile(pathOf.get(date) ?? dayPath(outDir, date));
+    if (!day) continue;
+    const entries = day.entries.filter((entry) => !keys.has(entryKey(entry)));
+    if (entries.length === day.entries.length) continue;
+    const rel = relativePath(outDir, day.path);
+    if (!entries.length && date !== runDate) {
+      known.delete(rel);
+      removeDay(day.path);
+      removed.push(day.path);
+      continue;
+    }
+    const next = { date, updatedAt: localDateTime(now), entryCount: entries.length, entries, errors: day.errors ?? [] };
+    const mdPath = day.path.replace(/\.json$/, ".md");
+    writeFile(day.path, serialise(next));
+    writeFile(mdPath, renderMarkdown(next));
+    known.set(rel, { date, entryCount: entries.length });
+    days.push({ date, json: day.path, markdown: mdPath, entryCount: entries.length });
+  }
+
+  const sources = groups.size
+    ? writeSourceFiles(outDir, now, { configured: readConfiguredSources(), groups, previous, kept })
+    : null;
+  return {
+    entries: bySource.reduce((sum, s) => sum + s.removed, 0),
+    bySource,
+    days,
+    removed,
+    sources: sources && { written: sources.written, removed: sources.removed },
+  };
+}
+
 /** Every entry in the day files on disk, once each. */
 function entriesOnDisk(outDir) {
   const seen = new Map();
@@ -658,9 +745,7 @@ function main() {
     });
   }
 
-  const indexPath = join(outDir, "index.json");
-  const { index, changedOutside } = buildIndex(outDir, known, now);
-  writeFile(indexPath, serialise(index));
+  const { changedOutside } = buildIndex(outDir, known, now);
 
   // A full run's pool holds every entry on disk, so the source files come from it directly.
   // An incremental run updates them from the day files it read, unless that can't be trusted.
@@ -687,6 +772,14 @@ function main() {
     sources = rebuildSources(outDir, entriesOnDisk(outDir), now);
   }
 
+  const retentionWarnings = [];
+  const pruned = prune(outDir, now, { runDate, rulesFor: readRetention(retentionWarnings), known });
+  for (const warning of retentionWarnings) console.error(`warning: ${warning}`);
+
+  const indexPath = join(outDir, "index.json");
+  const { index } = buildIndex(outDir, known, now);
+  writeFile(indexPath, serialise(index));
+
   const total = (field) => [...stats.values()].reduce((sum, s) => sum + s[field], 0);
   const summary = {
     mode,
@@ -701,6 +794,7 @@ function main() {
     indexedDays: index.dateCount,
     indexedEntries: index.entryCount,
     sources,
+    pruned: { ...pruned, warnings: retentionWarnings },
   };
   process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
 }

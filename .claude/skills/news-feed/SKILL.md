@@ -27,7 +27,7 @@ The work splits in two: the scripts do all fetching, merging and rendering; you 
 
 - Never reuse a source list from memory or from an earlier digest. Step 1 re-reads the file in full.
 - `type` is currently `Podcast`, `YouTube` or `Blog`, but a new value may appear at any time. The script reads an unknown type's `link` as an RSS/Atom feed and warns on stderr. Pass that warning on in your report so the user knows the type was not specially handled.
-- A source removed from the file simply stops appearing. Entries already written into past day files stay there; do not go back and delete them.
+- A source removed from the file simply stops appearing. Entries already written into past day files stay there until the retention rules delete them (Step 3); do not go back and delete them yourself.
 - Categories, tags, types and source names are taken from the data on every run. Nothing about the source list is hardcoded anywhere.
 
 ## Step 1: Fetch the entries
@@ -198,13 +198,34 @@ The skill is meant to run once a day, but running it again is safe and is the no
 - **An entry already filed is updated** from this fetch: title, thumbnail, duration, publish time and every other fetched field take the new values.
 - **`summary` and `tags` are only replaced by non-empty values.** Left empty, the earlier ones are kept, so a summary written earlier is never lost — not even to a run without Claude (`npm run digest`). Conversely, a later skill run fills in the summaries such a run left empty.
 - **A new entry is appended.**
-- **An entry this fetch did not return is kept as it is** — whether it fell outside a shorter `--hours` window or another `--date`, its source failed this time, or it was filtered out. Nothing is ever removed from a day file by a re-run.
+- **An entry this fetch did not return is kept as it is** — whether it fell outside a shorter `--hours` window or another `--date`, its source failed this time, or it was filtered out. The merge never removes anything from a day file; only the retention rules do.
 - **An entry in the wrong day file is moved** to the file of its publish date — for instance after its `publishedAt` changed, or in a file written before entries were filed by publish date. A file left empty by such moves is deleted along with its note. The same item found in two day files is merged into one, keeping any summary and tags.
 - A day file whose content did not change is left exactly as it is, `updatedAt` included.
 - `updatedAt`, `entryCount` and the Markdown note of every day file written, and `index.json`, are refreshed.
 - The source files are updated from the day files as they now are, so they always agree with them; a source with nothing new keeps its file as it was.
 
-The script prints how it ran (`mode`: `full`, `incremental`, or `incremental, sources rebuilt`) and how many day files it read (`daysRead`); for every day file it wrote, its date, its JSON and Markdown paths, how many entries it added and updated and its total (`days`); the day files it removed (`removed`); how many entries it moved between days (`moved`); the totals added and updated; how many it skipped as duplicates within this run; the path of `index.json`; and under `sources`, the source files it wrote (`written`: name, slug, path and entry count of each) and removed (`removed`), the path of `sources/index.json` (`index`) and how many sources it indexed (`sourceCount`).
+The script prints how it ran (`mode`: `full`, `incremental`, or `incremental, sources rebuilt`) and how many day files it read (`daysRead`); for every day file it wrote, its date, its JSON and Markdown paths, how many entries it added and updated and its total (`days`); the day files it removed (`removed`); how many entries it moved between days (`moved`); the totals added and updated; how many it skipped as duplicates within this run; the path of `index.json`; under `sources`, the source files it wrote (`written`: name, slug, path and entry count of each) and removed (`removed`), the path of `sources/index.json` (`index`) and how many sources it indexed (`sourceCount`); and under `pruned`, what the retention rules deleted (see below).
+
+### Retention
+
+`source.json` may set retention rules, which delete old entries so the data does not grow forever:
+
+```json
+{
+  "retention": { "maxAgeDays": 30, "maxEntries": 100 },
+  "items": [{ "title": "The Guardian", "...": "...", "retention": { "maxEntries": 300, "maxAgeDays": null } }]
+}
+```
+
+- `maxAgeDays`: delete an entry whose publish date is more than this many days before today's local date.
+- `maxEntries`: keep only a source's newest this many entries.
+- Both rules apply **per source**. The top-level `retention` is the default for every source, including one no longer listed in `source.json`; an item's own `retention` overrides it rule by rule, and `null` turns a default rule off for that source. No `retention` anywhere means nothing is deleted.
+- With both rules, an entry is deleted when it breaks either. An entry whose `publishedAt` has no date is never deleted, nor counted.
+- A value that is not a positive whole number, or an unknown rule, is ignored with a warning on stderr.
+
+The script applies them at the end of every write, `--full` included, after the new entries are filed and the source files updated: each source file with a rule tells which of its entries have expired, and only the day files holding those are opened. Expired entries are removed from their day files and source files; a day file left with no entries is deleted with its note, except the run date's. `index.json` is written after this, so it already reflects the deletions. A `--date` fetch older than `maxAgeDays` is therefore deleted in the same run — that is the rule working, not an error; mention it in the report.
+
+`pruned` in the output holds the number of entries deleted (`entries`), the count per source (`bySource`), the day files rewritten (`days`) and deleted (`removed`), the source files rewritten or deleted (`sources`, or `null` when none), and any `warnings` about the rules.
 
 ## Step 4: Build the site
 
@@ -243,6 +264,7 @@ Tell the user:
 
 - for every day file written: its date, the paths of its JSON and Markdown files, how many entries were added and updated, and that day's total
 - any day files removed and the number of entries moved between days, when there were any
+- what the retention rules deleted, when anything: the entry count per source, and the day files rewritten or deleted; plus any retention warnings
 - whether the site build succeeded (`web/out/`), or the error it failed with
 - whether the content was pushed (with the commit), skipped (and why), or failed to push (with the error)
 - the entry count per source, grouped by type

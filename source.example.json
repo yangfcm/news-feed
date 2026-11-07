@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "retention": { "maxAgeDays": 90, "maxEntries": 500 },
   "filters": {
     "YouTube": { "minDuration": 181, "availableInCountry": "AU" }
   },
@@ -9,7 +10,8 @@
       "link": "https://www.abc.net.au/feeds/9443166/podcast.xml",
       "type": "Podcast",
       "category": ["News"],
-      "sourceLink": "https://www.abc.net.au/listen/programs/abc-news-daily"
+      "sourceLink": "https://www.abc.net.au/listen/programs/abc-news-daily",
+      "retention": { "maxAgeDays": 10, "maxEntries": 20 }
     },
     {
       "title": "Maximilian Schwarzmueller",

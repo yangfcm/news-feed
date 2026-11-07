@@ -121,6 +121,30 @@ The code and your content are kept apart: this repo holds only the code, and `co
 
    An item's `filters` replaces the type defaults rule by rule. Set a rule to `null` to turn that default off for one item. A rule that can't be read is ignored, and the fetch prints a warning.
 
+   Retention rules keep the data from growing forever. Set a default for every source under a top-level `retention`, and override it on an item with its own `retention`:
+
+   ```json
+   {
+     "version": 2,
+     "retention": { "maxAgeDays": 30, "maxEntries": 100 },
+     "items": [
+       {
+         "title": "The Guardian",
+         "type": "Blog",
+         "link": "https://www.theguardian.com/international/rss",
+         "retention": { "maxEntries": 300, "maxAgeDays": null }
+       }
+     ]
+   }
+   ```
+
+   | Rule         | Deletes an item when                                                                                |
+   | ------------ | --------------------------------------------------------------------------------------------------- |
+   | `maxAgeDays` | it was published more than this many days before today (by local date), so `30` keeps about a month. |
+   | `maxEntries` | its source has this many newer items. Each source is counted on its own.                            |
+
+   With both rules set, an item is deleted when it breaks either one. An item's `retention` replaces the default rule by rule, and `null` turns a default rule off for that source. A source that is no longer in `source.json` follows the default. Values must be positive whole numbers; a rule that can't be read is ignored with a warning. Deleting happens at the end of every write, after the new items are filed; a day left with no items is deleted.
+
 ### Making a digest
 
 In Claude Code, from the project root, run the skill:
