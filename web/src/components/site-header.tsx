@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { CalendarLink } from "@/components/calendar-link";
 import { Logo } from "@/components/logo";
 import { ModeToggle } from "@/components/mode-toggle";
 import { NavigationProgressBar } from "@/components/navigation-progress";
 import { SourcesLink } from "@/components/sources-link";
 import { ThemeColorPicker } from "@/components/theme-color-picker";
+import { TodayLink } from "@/components/today-link";
 import { getAvailableDates } from "@/lib/data";
 
 export function SiteHeader() {
@@ -16,7 +16,7 @@ export function SiteHeader() {
           News Feed
         </Link>
         <div className="flex items-center gap-2">
-          <CalendarLink dates={getAvailableDates()} />
+          <TodayLink dates={getAvailableDates()} />
           <SourcesLink />
           <ThemeColorPicker />
           <ModeToggle />
