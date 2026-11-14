@@ -7,7 +7,8 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export function SourcesLink() {
-  const active = usePathname().replace(/\/$/, "") === "/sources";
+  const pathname = usePathname();
+  const active = pathname.startsWith("/sources") || pathname.startsWith("/source/");
 
   return (
     <Link

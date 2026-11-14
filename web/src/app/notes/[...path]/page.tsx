@@ -47,7 +47,7 @@ export default async function NotePage({ params }: PageProps<"/notes/[...path]">
   }
 
   return (
-    <PageShell sidebar={<NoteTree tree={tree} selected={note.segments} />}>
+    <PageShell sidebar={<NoteTree tree={tree} selected={note.segments} headings={note.headings} />}>
       <NoteView note={note} />
     </PageShell>
   );

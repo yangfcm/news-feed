@@ -27,7 +27,7 @@ export default function NotesPage() {
   }
 
   return (
-    <PageShell sidebar={<NoteTree tree={tree} selected={note.segments} />}>
+    <PageShell sidebar={<NoteTree tree={tree} selected={note.segments} headings={note.headings} />}>
       <NoteView note={note} />
     </PageShell>
   );

@@ -78,6 +78,13 @@ export type Source = {
   entries: Entry[];
 };
 
+/** An h1–h4 of a note; `id` is the heading element's id, for linking to it. */
+export type NoteHeading = {
+  depth: number;
+  text: string;
+  id: string;
+};
+
 /** A folder or a .md file under content/data/notes/; `segments` is its path from there, without .md. */
 export type NoteNode =
   | { kind: "folder"; name: string; segments: string[]; children: NoteNode[] }
@@ -89,4 +96,5 @@ export type Note = {
   /** The front matter between the leading `---` lines, if any, without them. */
   meta?: string;
   content: string;
+  headings: NoteHeading[];
 };
