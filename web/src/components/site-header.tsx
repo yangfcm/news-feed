@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { ModeToggle } from "@/components/mode-toggle";
 import { NavigationProgressBar } from "@/components/navigation-progress";
+import { NotesLink } from "@/components/notes-link";
 import { SourcesLink } from "@/components/sources-link";
 import { ThemeColorPicker } from "@/components/theme-color-picker";
 import { TodayLink } from "@/components/today-link";
@@ -18,6 +19,7 @@ export function SiteHeader() {
         <div className="flex items-center gap-2">
           <TodayLink dates={getAvailableDates()} />
           <SourcesLink />
+          <NotesLink />
           <ThemeColorPicker />
           <ModeToggle />
         </div>
