@@ -5,7 +5,7 @@ import path from "node:path";
 import type { Day, GlobalIndex, Source, SourceIndex } from "@/lib/types";
 
 // `next build` runs from web/; CONTENT_DIR is relative to the project root.
-const DATA_DIR = path.join(path.resolve(process.cwd(), "..", process.env.CONTENT_DIR || "content"), "data");
+export const DATA_DIR = path.join(path.resolve(process.cwd(), "..", process.env.CONTENT_DIR || "content"), "data");
 
 function readJson<T>(file: string): T | null {
   if (!existsSync(file)) return null;

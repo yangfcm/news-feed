@@ -77,3 +77,16 @@ export type Source = {
   entryCount: number;
   entries: Entry[];
 };
+
+/** A folder or a .md file under content/data/notes/; `segments` is its path from there, without .md. */
+export type NoteNode =
+  | { kind: "folder"; name: string; segments: string[]; children: NoteNode[] }
+  | { kind: "file"; name: string; segments: string[] };
+
+export type Note = {
+  title: string;
+  segments: string[];
+  /** The front matter between the leading `---` lines, if any, without them. */
+  meta?: string;
+  content: string;
+};
