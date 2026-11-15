@@ -1,0 +1,16 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - nvm install && nvm use
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: web/out
+    files:
+      - "**/*"
+  cache:
+    paths:
+      - web/node_modules/**/*

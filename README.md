@@ -31,7 +31,7 @@ Each run collects everything your sources published in the last 24 hours and pub
    - podcast episodes play in an inline audio player, and YouTube videos in an embedded player;
    - it has light and dark themes.
 
-   [`netlify.toml`](netlify.toml) deploys it to Netlify.
+   Any static host that runs `npm run build` and serves `web/out` can deploy it; see [Deploying](#deploying).
 
 ```
 content/                        your content, kept out of this repo (gitignored)
@@ -41,8 +41,9 @@ content/                        your content, kept out of this repo (gitignored)
 source.example.json             a starting source.json; `npm run setup` copies it into content/
 .claude/skills/news-feed/       the skill: instructions (SKILL.md) and fetch/write scripts
 web/                            the website (Next.js static export)
-scripts/fetch-content.sh        clones your content repo before a Netlify build
-netlify.toml                    Netlify build settings
+scripts/fetch-content.sh        clones your content repo before a hosted build
+.nvmrc, .npmrc                  Node version and npm settings for hosted builds
+netlify.toml, amplify.yml       Netlify and AWS Amplify settings; other hosts need no file
 ```
 
 The code and your content are kept apart: this repo holds only the code, and `content/` holds your sources and digests. To keep them in git, make `content/` a repo of its own; see [Keeping your content in git](#keeping-your-content-in-git).
@@ -196,11 +197,21 @@ On another machine, clone that repo as `content/` in the project root. From then
 git -C content add -A && git -C content commit -m "Add content." && git -C content push
 ```
 
-## Deploying to Netlify
+## Deploying
 
-Netlify builds the site from this repo, and [`scripts/fetch-content.sh`](scripts/fetch-content.sh) clones your content repo into `content/` before the build.
+Any host that connects to a git repo, runs `npm run build` and serves a folder of static files can deploy the site: Netlify, Vercel, Cloudflare Pages, AWS Amplify, Render, GitHub Pages and so on. The root `npm run build` does the whole job: [`scripts/fetch-content.sh`](scripts/fetch-content.sh) clones your content repo into `content/`, the dependencies of `web/` are installed if missing, and the site is built in the `TZ` timezone (default `Australia/Sydney`, the one the skill names day files in; set `TZ` on the host to change it). The Node version comes from [`.nvmrc`](.nvmrc) or the `engines` field in [`package.json`](package.json).
 
-1. Create a Netlify site from this repo. [`netlify.toml`](netlify.toml) already holds the build settings.
+1. Create a site from this repo, with these settings:
+
+   | Setting          | Value                                                                                 |
+   | ---------------- | ------------------------------------------------------------------------------------- |
+   | Root directory   | The repo root (leave empty).                                                          |
+   | Install command  | The host's default. The root `package.json` has no dependencies, so it installs nothing. |
+   | Build command    | `npm run build`                                                                       |
+   | Output directory | `web/out`                                                                             |
+
+   [`netlify.toml`](netlify.toml) and [`amplify.yml`](amplify.yml) already hold these for Netlify and AWS Amplify.
+
 2. In the site's environment variables, set:
 
    | Variable             | Value                                                                                                                                 |
@@ -208,8 +219,8 @@ Netlify builds the site from this repo, and [`scripts/fetch-content.sh`](scripts
    | `CONTENT_REPO`       | Your content repo on GitHub, as `owner/name`, e.g. `yangfcm/news-feed-data`.                                                          |
    | `CONTENT_REPO_TOKEN` | Only for a private content repo: a GitHub fine-grained token with read-only access to **Contents** of that one repo.                   |
 
-3. In Netlify, add a build hook (**Site configuration → Build & deploy → Build hooks**) and copy its URL.
-4. In the content repo on GitHub, add the URL as an Actions secret named `NETLIFY_BUILD_HOOK`, and add this workflow as `.github/workflows/deploy.yml`:
+3. Create a deploy hook on the host and copy its URL. Every host has one under a slightly different name: Netlify **Build hooks**, Vercel **Deploy Hooks**, Cloudflare Pages **Deploy hooks**, AWS Amplify **Incoming webhooks**.
+4. In the content repo on GitHub, add the URL as an Actions secret named `DEPLOY_HOOK`, and add this workflow as `.github/workflows/deploy.yml`:
 
    ```yaml
    name: Deploy
@@ -222,7 +233,7 @@ Netlify builds the site from this repo, and [`scripts/fetch-content.sh`](scripts
        steps:
          - run: curl -fsS -X POST -d '{}' "$HOOK"
            env:
-             HOOK: ${{ secrets.NETLIFY_BUILD_HOOK }}
+             HOOK: ${{ secrets.DEPLOY_HOOK }}
    ```
 
 Every push to the content repo then rebuilds the site with the new digests. A push to this repo rebuilds it too, and that build also fetches the latest content.
