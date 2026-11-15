@@ -43,7 +43,8 @@ source.example.json             a starting source.json; `npm run setup` copies i
 web/                            the website (Next.js static export)
 scripts/fetch-content.sh        clones your content repo before a hosted build
 .nvmrc, .npmrc                  Node version and npm settings for hosted builds
-netlify.toml, amplify.yml       Netlify and AWS Amplify settings; other hosts need no file
+netlify.toml, amplify.yml,      Netlify, AWS Amplify and Cloudflare Workers settings; other hosts
+wrangler.jsonc                  need no file
 ```
 
 The code and your content are kept apart: this repo holds only the code, and `content/` holds your sources and digests. To keep them in git, make `content/` a repo of its own; see [Keeping your content in git](#keeping-your-content-in-git).
@@ -210,7 +211,7 @@ Any host that connects to a git repo, runs `npm run build` and serves a folder o
    | Build command    | `npm run build`                                                                       |
    | Output directory | `web/out`                                                                             |
 
-   [`netlify.toml`](netlify.toml) and [`amplify.yml`](amplify.yml) already hold these for Netlify and AWS Amplify.
+   [`netlify.toml`](netlify.toml) and [`amplify.yml`](amplify.yml) already hold these for Netlify and AWS Amplify. On Cloudflare, a **Workers** project (the default) runs `npx wrangler deploy` after the build, and [`wrangler.jsonc`](wrangler.jsonc) tells it to serve `web/out`; set its `name` to your Worker's name. A Cloudflare **Pages** project needs only the output directory above.
 
 2. In the site's environment variables, set:
 

@@ -1,0 +1,11 @@
+// Cloudflare Workers (Workers Builds): `npm run build` then `npx wrangler deploy` serves web/out
+// as static assets. `name` must match the Worker's name in the Cloudflare dashboard.
+{
+  "name": "news-feed",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./web/out",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}

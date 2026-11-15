@@ -15,3 +15,6 @@ node_modules/
 # Your sources and digests (source.json, data/). Keep them out of this repo, or make
 # content/ a git repo of its own; see README.md.
 /content/
+
+# Wrangler (Cloudflare) local state
+.wrangler/
