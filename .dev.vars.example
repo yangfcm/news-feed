@@ -1,0 +1,13 @@
+# Settings for the Worker under `npm run dev:api` (wrangler dev). Copy to .dev.vars, which is
+# gitignored, and fill in. They override the vars in wrangler.jsonc, locally only.
+# See README.md, "Accounts".
+
+# The Firebase project whose ID tokens the API accepts.
+FIREBASE_PROJECT_ID=your-firebase-project-id
+
+# Lets `npm run dev` (http://localhost:3000) call the API on another port.
+DEV_ALLOWED_ORIGIN=http://localhost:3000
+
+# Only with the Firebase Auth emulator: accept its unsigned tokens. The Worker ignores this
+# unless the request is for localhost. Never set it in wrangler.jsonc.
+# FIREBASE_AUTH_EMULATOR=true

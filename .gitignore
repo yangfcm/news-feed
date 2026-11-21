@@ -18,3 +18,7 @@ node_modules/
 
 # Wrangler (Cloudflare) local state
 .wrangler/
+
+# The Worker's local settings for `wrangler dev`, which may hold the emulator switch.
+# See README.md, "Accounts".
+.dev.vars

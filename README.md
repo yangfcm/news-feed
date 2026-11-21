@@ -29,9 +29,10 @@ Each run collects everything your sources published in the last 24 hours and pub
    - every source has its own page with everything it has published, reached from the **Sources** page or from the source's name on any item;
    - the **Notes** page shows the Markdown files under `content/data/notes/`, with a folder tree in the sidebar; Markdown formatting and LaTeX math are rendered;
    - podcast episodes play in an inline audio player, and YouTube videos in an embedded player;
-   - it has light and dark themes.
+   - it has light and dark themes;
+   - readers can create an account with an email and password, and sign in; for now that only leads to a placeholder page. See [Accounts](#accounts).
 
-   Any static host that runs `npm run build` and serves `web/out` can deploy it; see [Deploying](#deploying).
+   Any static host that runs `npm run build` and serves `web/out` can deploy it; see [Deploying](#deploying). Accounts need Cloudflare Workers.
 
 ```
 content/                        your content, kept out of this repo (gitignored)
@@ -41,6 +42,7 @@ content/                        your content, kept out of this repo (gitignored)
 source.example.json             a starting source.json; `npm run setup` copies it into content/
 .claude/skills/news-feed/       the skill: instructions (SKILL.md) and fetch/write scripts
 web/                            the website (Next.js static export)
+worker/                         the Cloudflare Worker behind /api/* (accounts), and its D1 migrations
 scripts/fetch-content.sh        clones your content repo before a hosted build
 .nvmrc, .npmrc                  Node version and npm settings for hosted builds
 netlify.toml, amplify.yml,      Netlify, AWS Amplify and Cloudflare Workers settings; other hosts
@@ -211,7 +213,7 @@ Any host that connects to a git repo, runs `npm run build` and serves a folder o
    | Build command    | `npm run build`                                                                       |
    | Output directory | `web/out`                                                                             |
 
-   [`netlify.toml`](netlify.toml) and [`amplify.yml`](amplify.yml) already hold these for Netlify and AWS Amplify. On Cloudflare, a **Workers** project (the default) runs `npx wrangler deploy` after the build, and [`wrangler.jsonc`](wrangler.jsonc) tells it to serve `web/out`; set its `name` to your Worker's name. A Cloudflare **Pages** project needs only the output directory above.
+   [`netlify.toml`](netlify.toml) and [`amplify.yml`](amplify.yml) already hold these for Netlify and AWS Amplify. On Cloudflare, a **Workers** project (the default) runs `npx wrangler deploy` after the build, and [`wrangler.jsonc`](wrangler.jsonc) tells it to serve `web/out` and to run the Worker in [`worker/`](worker) for `/api/*`; set its `name` to your Worker's name. That deploy needs the D1 database the Worker uses: create it first, as [Accounts](#accounts) explains. A Cloudflare **Pages** project needs only the output directory above, and has no accounts.
 
 2. In the site's environment variables, set:
 
@@ -239,15 +241,113 @@ Any host that connects to a git repo, runs `npm run build` and serves a folder o
 
 Every push to the content repo then rebuilds the site with the new digests. A push to this repo rebuilds it too, and that build also fetches the latest content.
 
+## Accounts
+
+Readers can create an account with an email and password, confirm their email, sign in and out, and reset a forgotten password. For now that is all accounts do: once signed in, a reader sees a placeholder page at `/account/`. Every other page stays public.
+
+- **Firebase Authentication** holds the passwords and sends the verification and password reset emails. The pages `/signup/`, `/login/`, `/verify-email/`, `/forgot-password/` and `/account/` use its SDK in the browser.
+- **The Worker** in [`worker/`](worker) answers `/api/*`; Cloudflare serves every other path straight from `web/out` without running it. `GET /api/me` checks the Firebase ID token sent with the request, refuses an unverified email, and keeps the site's own `users` table in a **Cloudflare D1** database. A reader's row is made the first time they reach `/account/` after confirming their email.
+- **New users** are active at once, or wait for an administrator's approval, as the `app_settings` table says. A disabled user can still sign in to Firebase, but the site refuses them.
+
+Accounts need the Worker, so they work only when the site is deployed as a Cloudflare Workers project. Without the Firebase settings below the site builds as before: there is no **Account** button, and the account pages say sign-in isn't set up.
+
+### Setting up accounts
+
+1. **Firebase.** In the [Firebase console](https://console.firebase.google.com/), create a project, then:
+   - under **Authentication → Sign-in method**, enable **Email/Password**;
+   - under **Authentication → Settings → Authorized domains**, add your site's domain, such as `news-feed.<you>.workers.dev` or your own domain. The links in Firebase's emails return readers to the site only from these domains;
+   - under **Project settings → Your apps**, add a **Web** app and note its `apiKey`, `authDomain`, `projectId` and `appId`.
+2. **D1.** Sign in to Cloudflare with wrangler, create the database, and put its id in [`wrangler.jsonc`](wrangler.jsonc) as `database_id`. Put your Firebase project id there too, as `FIREBASE_PROJECT_ID`. Then create the tables:
+
+   ```bash
+   cd worker && npx wrangler login && npx wrangler d1 create news-feed
+   ```
+
+   ```bash
+   npm run db:migrate:remote
+   ```
+
+   Run the migrations again whenever a new file appears in `worker/migrations/`.
+3. **Build variables.** In the Cloudflare Worker's settings, under **Build → Variables and secrets**, set the Firebase web app's config. These values are public: they identify the project and grant nothing.
+
+   | Variable                           | Value                                    |
+   | ---------------------------------- | ---------------------------------------- |
+   | `NEXT_PUBLIC_FIREBASE_API_KEY`     | `apiKey`                                 |
+   | `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | `authDomain`, e.g. `<project>.firebaseapp.com` |
+   | `NEXT_PUBLIC_FIREBASE_PROJECT_ID`  | `projectId`                              |
+   | `NEXT_PUBLIC_FIREBASE_APP_ID`      | `appId`                                  |
+
+4. **Deploy, then make yourself an administrator.** Push, let Cloudflare build, sign up on the site and confirm your email. Then:
+
+   ```bash
+   cd worker && npx wrangler d1 execute DB --remote --config ../wrangler.jsonc --command "UPDATE users SET role = 'admin' WHERE email = 'you@example.com'"
+   ```
+
+### Sign-up settings
+
+The `app_settings` table has a single row. Change it with `wrangler d1 execute`, as above, or in the D1 console of the Cloudflare dashboard; a change takes effect on the next request.
+
+| Column                       | Meaning                                                                                                        |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `signup_requires_approval`   | `1`: a new user waits as `pending` until approved. `0`, the default: a new user is active at once. Changing it affects only users who sign up afterwards. |
+| `max_subscriptions_per_user` | The most sources a user may follow; `NULL`, the default, for no limit. Administrators are never limited. Not used yet. |
+
+```sql
+-- Require approval for new users
+UPDATE app_settings SET signup_requires_approval = 1, updated_at = '2026-11-21T00:00:00Z' WHERE id = 1;
+
+-- See who is waiting, then approve someone
+SELECT email, created_at FROM users WHERE status = 'pending';
+UPDATE users SET status = 'active', approved_at = '2026-11-21T00:00:00Z' WHERE email = 'friend@example.com';
+
+-- Refuse someone
+UPDATE users SET status = 'disabled' WHERE email = 'friend@example.com';
+```
+
+Timestamps must be UTC in exactly this form, `YYYY-MM-DDTHH:MM:SSZ`; the database refuses any other.
+
+### Running accounts locally
+
+1. Copy the examples, and fill them in with your Firebase project:
+
+   ```bash
+   cp .dev.vars.example .dev.vars && cp web/.env.example web/.env.local
+   ```
+
+   In `web/.env.local`, also set `NEXT_PUBLIC_API_ORIGIN=http://localhost:8787`.
+
+2. Create the tables in a local D1 database:
+
+   ```bash
+   npm run db:migrate:local
+   ```
+
+3. Start the API and the website, in two terminals:
+
+   ```bash
+   npm run dev:api
+   ```
+
+   ```bash
+   npm run dev
+   ```
+
+To work without a real Firebase project, use the Firebase Auth emulator. Start it with `npx firebase-tools emulators:start --only auth --project demo-news-feed`. In `.dev.vars`, set `FIREBASE_PROJECT_ID=demo-news-feed` and `FIREBASE_AUTH_EMULATOR=true`. In `web/.env.local`, set `NEXT_PUBLIC_FIREBASE_PROJECT_ID=demo-news-feed`, `NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099` and any value for the API key. The emulator sends no email; it prints the verification and reset links in its log. The Worker accepts the emulator's unsigned tokens only for requests to localhost, and only with `FIREBASE_AUTH_EMULATOR` set, so never set it in `wrangler.jsonc`.
+
+`npm test` runs the Worker's tests: the token checks, and the API against a local D1.
+
 ## Commands
 
 Run these from the project root. The root [`package.json`](package.json) only holds these shortcuts and has no dependencies of its own, so don't run `npm install` there.
 
 | Command           | What it does                                                                                                                                                                                                                                                                                                                                        |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `npm run setup`   | Installs the dependencies of the skill scripts (`.claude/skills/news-feed/scripts/`) and does a clean install of the website (`web/`) from its lockfile. Creates `content/source.json` from `source.example.json` if it does not exist yet. Run it after cloning, or when a lockfile changes.                                                                                                                                          |
+| `npm run setup`   | Installs the dependencies of the skill scripts (`.claude/skills/news-feed/scripts/`) and does a clean install of the website (`web/`) and the Worker (`worker/`) from their lockfiles. Creates `content/source.json` from `source.example.json` if it does not exist yet. Run it after cloning, or when a lockfile changes.                                                                                                                                          |
 | `npm run digest`  | Makes the digest without Claude: fetches what the sources in `content/source.json` published in the last 24 hours, then writes each item into the JSON and Markdown note of the day it was published, and the index of dates, into `content/data/`, with no summaries or tags. Items already filed are updated and new ones added; summaries written earlier are kept. Pass `--hours` (1 to 96) for a different window, e.g. `npm run digest -- --hours 12`, `--date` for one day, e.g. `npm run digest -- --date 2026-10-27`, `--out <dir>` to try a run without touching `content/data/`, or `--full` to rebuild the index and the source files from every day file. Run `npm run build` afterwards to update the website. |
 | `npm run dev`     | Starts the website's development server at http://localhost:3000. Pages read `content/data/` on every request, so new data shows up on refresh.                                                                                                                                                                                                      |
 | `npm run build`   | Builds the static website into `web/out/`: `index.html` for today, one `<date>/index.html` per day in the index, `sources/index.html` listing the sources, one `source/<slug>/index.html` per source, and `notes/index.html` plus one `notes/<path>/index.html` per Markdown file under `content/data/notes/`. Rebuild after new data is written. The skill does this as its last step.                                                                                                                                                      |
 | `npm run preview` | Serves the built `web/out/` locally, to check the production build before deploying.                                                                                                                                                                                                                                                                |
 | `npm run lint`    | Runs ESLint over the website code.                                                                                                                                                                                                                                                                                                                  |
+| `npm run dev:api` | Starts the Worker locally at http://localhost:8787, with a local D1 database and the settings in `.dev.vars`. See [Running accounts locally](#running-accounts-locally).                                                                                                                                                                              |
+| `npm test`        | Runs the Worker's tests.                                                                                                                                                                                                                                                                                                                            |
+| `npm run db:migrate:local`, `npm run db:migrate:remote` | Applies the migrations in `worker/migrations/` to the local D1 database, or to the one on Cloudflare.                                                                                                                                                                                                    |
